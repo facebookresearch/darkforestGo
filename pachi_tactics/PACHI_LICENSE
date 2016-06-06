@@ -1,0 +1,15 @@
+License
+-------
+
+Pachi is distributed under the GPLv2 licence (see the COPYING file for
+details and full text of the licence); you are welcome to tweak it as
+you wish (contributing back upstream is welcome) and distribute
+it freely, but only together with the source code. You are welcome
+to make private modifications to the code (e.g. try new algorithms and
+approaches), use them internally or even to have your bot play on the
+internet and enter competitions, but as soon as you want to release it
+to the public, you need to release the source code as well.
+
+One exception is the Autotest framework, which is licenced under the
+terms of the MIT licence (close to public domain) - you are free to
+use it any way you wish.

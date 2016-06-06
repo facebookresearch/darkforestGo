@@ -1,0 +1,16 @@
+cpp_library(
+    name = 'pachi_tactics_c',
+    srcs = [
+        '1lib.c',
+        '2lib.c',
+        'nlib.c',
+        'selfatari.c',
+        'ladder.c',
+        'nakade.c'
+    ],
+    deps = [
+        '@/experimental/deeplearning/yuandong/go/board:board_c',
+    ],
+)
+
+

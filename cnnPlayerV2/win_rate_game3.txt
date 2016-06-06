@@ -1,0 +1,350 @@
+[2] Suggest: W D4, Winrate: 0.536567
+Actual move: W Q4
+[3] Suggest: B D17, Winrate: 0.456418
+Actual move: B C16
+[4] Suggest: W D4, Winrate: 0.550847
+Actual move: W D4
+[5] Suggest: B C6, Winrate: 0.464270
+Actual move: B C6
+[6] Suggest: W F3, Winrate: 0.529821
+Actual move: W F3
+[7] Suggest: B B4, Winrate: 0.483058
+Actual move: B J16
+[8] Suggest: W C5, Winrate: 0.542061
+Actual move: W R14
+[9] Suggest: B O16, Winrate: 0.457429
+Actual move: B O17
+[10] Suggest: W C5, Winrate: 0.537724
+Actual move: W R7
+[11] Suggest: B D10, Winrate: 0.475358
+Actual move: B D10
+[12] Suggest: W P14, Winrate: 0.540280
+Actual move: W E16
+[13] Suggest: B D17, Winrate: 0.472535
+Actual move: B D17
+[14] Suggest: W D15, Winrate: 0.535701
+Actual move: W E13
+[15] Suggest: B E14, Winrate: 0.463060
+Actual move: B E14
+[16] Suggest: W F14, Winrate: 0.546162
+Actual move: W D15
+[17] Suggest: B D14, Winrate: 0.475754
+Actual move: B D14
+[18] Suggest: W C15, Winrate: 0.532267
+Actual move: W C15
+[19] Suggest: B E17, Winrate: 0.469541
+Actual move: B E17
+[20] Suggest: W F16, Winrate: 0.528622
+Actual move: W F16
+[21] Suggest: B F17, Winrate: 0.472890
+Actual move: B F14
+[22] Suggest: W F17, Winrate: 0.539978
+Actual move: W F17
+[23] Suggest: B B13, Winrate: 0.477338
+Actual move: B B16
+[24] Suggest: W G15, Winrate: 0.547472
+Actual move: W H15
+[25] Suggest: B H16, Winrate: 0.478647
+Actual move: B J15
+[26] Suggest: W H16, Winrate: 0.578203
+Actual move: W H16
+[27] Suggest: B J17, Winrate: 0.440216
+Actual move: B J17
+[28] Suggest: W H13, Winrate: 0.565533
+Actual move: W H13
+[29] Suggest: B J14, Winrate: 0.436642
+Actual move: B J14
+[30] Suggest: W H14, Winrate: 0.561509
+Actual move: W G13
+[31] Suggest: B F13, Winrate: 0.439914
+Actual move: B K12
+[32] Suggest: W C12, Winrate: 0.580310
+Actual move: W C11
+[33] Suggest: B F13, Winrate: 0.421750
+Actual move: B D13
+[34] Suggest: W B15, Winrate: 0.582519
+Actual move: W D11
+[35] Suggest: B E11, Winrate: 0.427672
+Actual move: B E11
+[36] Suggest: W B13, Winrate: 0.594681
+Actual move: W B13
+[37] Suggest: B E12, Winrate: 0.414838
+Actual move: B B12
+[38] Suggest: W B15, Winrate: 0.594744
+Actual move: W B15
+[39] Suggest: B C13, Winrate: 0.401311
+Actual move: B B11
+[40] Suggest: W C10, Winrate: 0.580027
+Actual move: W C10
+[41] Suggest: B D12, Winrate: 0.447272
+Actual move: B D12
+[42] Suggest: W E10, Winrate: 0.559795
+Actual move: W D9
+[43] Suggest: B E10, Winrate: 0.443678
+Actual move: B E10
+[44] Suggest: W C9, Winrate: 0.578220
+Actual move: W C9
+[45] Suggest: B C12, Winrate: 0.419631
+Actual move: B C12
+[46] Suggest: W G11, Winrate: 0.590845
+Actual move: W G11
+[47] Suggest: B F13, Winrate: 0.416084
+Actual move: B F12
+[48] Suggest: W F13, Winrate: 0.615398
+Actual move: W D7
+[49] Suggest: B H11, Winrate: 0.415718
+Actual move: B D6
+[50] Suggest: W F7, Winrate: 0.620753
+Actual move: W F13
+[51] Suggest: B E12, Winrate: 0.370821
+Actual move: B E12
+[52] Suggest: W H10, Winrate: 0.630491
+Actual move: W F7
+[53] Suggest: B G12, Winrate: 0.392980
+Actual move: B E9
+[54] Suggest: W C7, Winrate: 0.627391
+Actual move: W E8
+[55] Suggest: B G15, Winrate: 0.402729
+Actual move: B G9
+[56] Suggest: W J11, Winrate: 0.637079
+Actual move: W J11
+[57] Suggest: B J9, Winrate: 0.382342
+Actual move: B C7
+[58] Suggest: W F8, Winrate: 0.686002
+Actual move: W F5
+[59] Suggest: B B4, Winrate: 0.364649
+Actual move: B E6
+[60] Suggest: W F8, Winrate: 0.697011
+Actual move: W F8
+[61] Suggest: B G10, Winrate: 0.300952
+Actual move: B B9
+[62] Suggest: W B10, Winrate: 0.681224
+Actual move: W B10
+[63] Suggest: B A10, Winrate: 0.316222
+Actual move: B A10
+[64] Suggest: W B8, Winrate: 0.682060
+Actual move: W H7
+[65] Suggest: B B4, Winrate: 0.338599
+Actual move: B H10
+[66] Suggest: W H11, Winrate: 0.659859
+Actual move: W H11
+[67] Suggest: B B8, Winrate: 0.380319
+Actual move: B G10
+[68] Suggest: W K11, Winrate: 0.712286
+Actual move: W K11
+[69] Suggest: B K9, Winrate: 0.301642
+Actual move: B J8
+[70] Suggest: W K6, Winrate: 0.709050
+Actual move: W K6
+[71] Suggest: B L8, Winrate: 0.302903
+Actual move: B C4
+[72] Suggest: W C3, Winrate: 0.645279
+Actual move: W C3
+[73] Suggest: B E4, Winrate: 0.342400
+Actual move: B D3
+[74] Suggest: W D2, Winrate: 0.674003
+Actual move: W D2
+[75] Suggest: B B8, Winrate: 0.342924
+Actual move: B B3
+[76] Suggest: W E3, Winrate: 0.686325
+Actual move: W E3
+[77] Suggest: B B8, Winrate: 0.330781
+Actual move: B Q7
+[78] Suggest: W R6, Winrate: 0.725690
+Actual move: W Q8
+[79] Suggest: B L7, Winrate: 0.308158
+Actual move: B R6
+[80] Suggest: W Q6, Winrate: 0.703051
+Actual move: W P7
+[81] Suggest: B Q6, Winrate: 0.309783
+Actual move: B Q6
+[82] Suggest: W R8, Winrate: 0.707394
+Actual move: W R8
+[83] Suggest: B P6, Winrate: 0.290915
+Actual move: B P8
+[84] Suggest: W O7, Winrate: 0.694547
+Actual move: W P6
+[85] Suggest: B S7, Winrate: 0.299307
+Actual move: B S6
+[86] Suggest: W R3, Winrate: 0.724443
+Actual move: W P5
+[87] Suggest: B R3, Winrate: 0.295094
+Actual move: B P9
+[88] Suggest: W R10, Winrate: 0.716872
+Actual move: W R11
+[89] Suggest: B R3, Winrate: 0.303735
+Actual move: B M8
+[90] Suggest: W M10, Winrate: 0.721014
+Actual move: W H17
+[91] Suggest: B R3, Winrate: 0.275557
+Actual move: B R3
+[92] Suggest: W R4, Winrate: 0.721468
+Actual move: W R4
+[93] Suggest: B S4, Winrate: 0.281685
+Actual move: B S4
+[94] Suggest: W Q3, Winrate: 0.715654
+Actual move: W Q3
+[95] Suggest: B S2, Winrate: 0.290446
+Actual move: B S3
+[96] Suggest: W M6, Winrate: 0.714925
+Actual move: W R2
+[97] Suggest: B S2, Winrate: 0.290592
+Actual move: B S2
+[98] Suggest: W Q2, Winrate: 0.701228
+Actual move: W M6
+[99] Suggest: B L11, Winrate: 0.296349
+Actual move: B R15
+[100] Suggest: W Q14, Winrate: 0.719898
+Actual move: W S15
+[101] Suggest: B S16, Winrate: 0.259980
+Actual move: B S16
+[102] Suggest: W S14, Winrate: 0.733492
+Actual move: W Q15
+[103] Suggest: B R16, Winrate: 0.299166
+Actual move: B R16
+[104] Suggest: W Q14, Winrate: 0.715834
+Actual move: W B18
+[105] Suggest: B C18, Winrate: 0.293676
+Actual move: B D16
+[106] Suggest: W E15, Winrate: 0.730975
+Actual move: W E15
+[107] Suggest: B C18, Winrate: 0.269027
+Actual move: B C18
+[108] Suggest: W B17, Winrate: 0.730471
+Actual move: W B17
+[109] Suggest: B A18, Winrate: 0.291102
+Actual move: B A16
+[110] Suggest: W E18, Winrate: 0.723675
+Actual move: W E18
+[111] Suggest: B D18, Winrate: 0.272990
+Actual move: B B19
+[112] Suggest: W G18, Winrate: 0.735105
+Actual move: W G18
+[113] Suggest: B D18, Winrate: 0.267199
+Actual move: B R9
+[114] Suggest: W Q9, Winrate: 0.687845
+Actual move: W Q9
+[115] Suggest: B Q10, Winrate: 0.299645
+Actual move: B M5
+[116] Suggest: W N6, Winrate: 0.723097
+Actual move: W N6
+[117] Suggest: B K3, Winrate: 0.292027
+Actual move: B Q10
+[118] Suggest: W R10, Winrate: 0.713557
+Actual move: W R10
+[119] Suggest: B S9, Winrate: 0.272318
+Actual move: B S8
+[120] Suggest: W S9, Winrate: 0.728253
+Actual move: W S9
+[121] Suggest: B S7, Winrate: 0.275065
+Actual move: B S7
+[122] Suggest: W R9, Winrate: 0.724717
+Actual move: W R9
+[123] Suggest: B M3, Winrate: 0.285793
+Actual move: B C2
+[124] Suggest: W B8, Winrate: 0.725555
+Actual move: W Q14
+[125] Suggest: B O15, Winrate: 0.277921
+Actual move: B J3
+[126] Suggest: W L3, Winrate: 0.746162
+Actual move: W L3
+[127] Suggest: B L2, Winrate: 0.254095
+Actual move: B M3
+[128] Suggest: W M2, Winrate: 0.758847
+Actual move: W K3
+[129] Suggest: B K5, Winrate: 0.229022
+Actual move: B K5
+[130] Suggest: W L6, Winrate: 0.777770
+Actual move: W L6
+[131] Suggest: B J2, Winrate: 0.234460
+Actual move: B H2
+[132] Suggest: W K2, Winrate: 0.778084
+Actual move: W J4
+[133] Suggest: B K4, Winrate: 0.282309
+Actual move: B H4
+[134] Suggest: W J5, Winrate: 0.769958
+Actual move: W J5
+[135] Suggest: B K4, Winrate: 0.240755
+Actual move: B K2
+[136] Suggest: W L2, Winrate: 0.775763
+Actual move: W L2
+[137] Suggest: B L1, Winrate: 0.237026
+Actual move: B H5
+[138] Suggest: W J6, Winrate: 0.759325
+Actual move: W G3
+[139] Suggest: B K4, Winrate: 0.280235
+Actual move: B H3
+[140] Suggest: W J6, Winrate: 0.732792
+Actual move: W J6
+[141] Suggest: B K4, Winrate: 0.272780
+Actual move: B F6
+[142] Suggest: W G6, Winrate: 0.776897
+Actual move: W G6
+[143] Suggest: B G5, Winrate: 0.235619
+Actual move: B G5
+[144] Suggest: W J7, Winrate: 0.782342
+Actual move: W G2
+[145] Suggest: B E5, Winrate: 0.281183
+Actual move: B G1
+[146] Suggest: W H6, Winrate: 0.788564
+Actual move: W F1
+[147] Suggest: B H1, Winrate: 0.248171
+Actual move: B J1
+[148] Suggest: W H6, Winrate: 0.815534
+Actual move: W J18
+[149] Suggest: B K18, Winrate: 0.212342
+Actual move: B L1
+[150] Suggest: W M2, Winrate: 0.803811
+Actual move: W M2
+[151] Suggest: B D3, Winrate: 0.208722
+Actual move: B D3
+[152] Suggest: W B8, Winrate: 0.798299
+Actual move: W H6
+[153] Suggest: B F4, Winrate: 0.224364
+Actual move: B D1
+[154] Suggest: W E2, Winrate: 0.804417
+Actual move: W C3
+[155] Suggest: B F4, Winrate: 0.226448
+Actual move: B F4
+[156] Suggest: W L17, Winrate: 0.807736
+Actual move: W E5
+[157] Suggest: B D3, Winrate: 0.213717
+Actual move: B D5
+[158] Suggest: W E4, Winrate: 0.787331
+Actual move: W E4
+[159] Suggest: B E2, Winrate: 0.223510
+Actual move: B E2
+[160] Suggest: W H1, Winrate: 0.781325
+Actual move: W H1
+[161] Suggest: B D3, Winrate: 0.223604
+Actual move: B R12
+[162] Suggest: W Q12, Winrate: 0.815230
+Actual move: W Q12
+[163] Suggest: B G1, Winrate: 0.176718
+Actual move: B G1
+[164] Suggest: W D3, Winrate: 0.843540
+Actual move: W D3
+[165] Suggest: B B2, Winrate: 0.155781
+Actual move: B B2
+[166] Suggest: W H1, Winrate: 0.846534
+Actual move: W H1
+[167] Suggest: B Q11, Winrate: 0.146621
+Actual move: B Q11
+[168] Suggest: W P12, Winrate: 0.864819
+Actual move: W P12
+[169] Suggest: B O11, Winrate: 0.143179
+Actual move: B G1
+[170] Suggest: W N16, Winrate: 0.897147
+Actual move: W B4
+[171] Suggest: B E1, Winrate: 0.203539
+Actual move: B H1
+[172] Suggest: W C5, Winrate: 0.794507
+Actual move: W C5
+[173] Suggest: B G4, Winrate: 0.217636
+Actual move: B B5
+[174] Suggest: W B6, Winrate: 0.883137
+Actual move: W B6
+[175] Suggest: B C4, Winrate: 0.117919
+Actual move: B C4
+[176] Suggest: W N16, Winrate: 0.885791
+Actual move: W C1
