@@ -16,28 +16,34 @@ Then just compile with the following command:
 sh ./compile.sh
 ```
 
-GCC 4.8+ is required. Tested in CentOS 6.5. 
+GCC 4.8+ is required. Tested in CentOS 6.5. It can also run on other Linux platform (but not tested yet). 
 
 Usage
 ------------
-Step 1: First run the GPU server 
+Step 1: Download the models.  
+
+Create `./models` directory and download trained [models](https://www.dropbox.com/sh/6nm8g8z163omb9f/AABQxJyV7EIdbHKd9rnPQGnha?dl=0).
+
+Stee 2: First run the GPU server   
 
 ```bash
 cd ./local_evaluator     
 sh cnn_evaluator.sh [num_gpu] [pipe file path]
 ```
 
-* `num_gpu`         the number of GPUs you have for the current machine. 
+* `num_gpu`         the number of GPUs (1-8) you have for the current machine. 
 * `pipe file path`  The location that the pipe file is settled. Default is /data/local/go/
 
-Step 2: Run the main program
+Example code: `sh cnn_evaluator.sh 4 /data/local/go`
+
+Step 3: Run the main program
 
 ```bash
 cd ./cnnPlayerV2     
 th cnnPlayerMCTSV2.lua [options]
 ```
 
-See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run, you could use:
+See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run (assuming you have 4 GPUs), you could use:
 
 ```bash
 th cnnPlayerMCTSV2.lua --use_formal_params --time_limits 10
