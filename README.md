@@ -54,12 +54,31 @@ or
 th cnnPlayerMCTSV2.lua --use_formal_params --time_limits 10
 ```   
 
+To load an existing game up to move 23:
+```bash
+th cnnPlayerMCTSV2.lua [other_options] --setup_board "/path/to/sgf 23"
+```   
+
 When you are in the interactive environment, type 
 
 * `clear_board` to clear the board
 * `genmove b`    to genmove the black move.
 * `play w Q4`    to play a move at Q4 for specific color.
 * `quit`         to quit.
+
+A complete game may look like:
+
+```bash
+clear_board
+[MCTS initialization ...]
+place_free_handicap 3
+genmove b 
+[MCTS generates moves..e.g., it returns Q16]
+play w D4
+genmove b
+[MCTS generates moves...]
+quit
+```
 
 For more commands, please use command `list_commands`, check the details of [GTP protocol](http://senseis.xmp.net/?GTP) or take a look at the source code.
 
@@ -74,7 +93,7 @@ Trouble Shooting
 **Q**: My program hanged on genmove/quit, what happened?  
 **A**: Make sure you run the GPU server under ./local\_evaluator, the server remains active and the pipe file path matches between the server and the client.
 
-If you have any questions, please **open a Github issue** by clicking *"Issues"* tab and then click *"New Issue"*.
+If you have any questions or find any bugs, please **open a Github issue** by clicking *"Issues"* tab and then click *"New Issue"*.
 
 Code Overview
 -------------
