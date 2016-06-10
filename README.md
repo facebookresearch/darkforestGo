@@ -37,7 +37,11 @@ cd ./cnnPlayerV2
 th cnnPlayerMCTSV2.lua [options]
 ```
 
-See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run, you could use `--use\_formal\_params --time\_limits 10`.   
+See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run, you could use:
+
+```bash
+th cnnPlayerMCTSV2.lua --use_formal_params --time_limits 10
+```   
 
 When you are in the interactive environment, type 
 
