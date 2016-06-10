@@ -95,6 +95,11 @@ Award
 * 3rd place in KGS Go Tournament. [link](http://www.weddslist.com/kgs/past/119/index.html)
 * 2nd place in UEC Computer Go Cup. [link](http://jsb.cs.uec.ac.jp/~igo/eng/result2.html)
 
+The difference between this open source version (A) and that in KGS/competitions (B) is the following:
+* (A) runs on a single machine and uses pipe as client/server communications. (B) uses thrift RPC services as a way to communicate.
+* (B) uses more computational resources.
+* We might have tuned parameters for (B) extensively, but not for (A). We will give the tip of parameter tuning soon.
+
 Trouble Shooting 
 ----------------
 **Q**: My program hanged on genmove/quit, what happened?  
@@ -163,6 +168,6 @@ Yuandong Tian, Yan Zhu
 
 ```
 
-Here is the arxiv [link](http://arxiv.org/abs/1511.06410)
+Here is the arxiv [link](http://arxiv.org/abs/1511.06410) and poster [link](http://yuandong-tian.com/ICLR2016-poster.pdf)
 
 
