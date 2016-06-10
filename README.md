@@ -24,7 +24,7 @@ Step 1: Download the models.
 
 Create `./models` directory and download trained [models](https://www.dropbox.com/sh/6nm8g8z163omb9f/AABQxJyV7EIdbHKd9rnPQGnha?dl=0).
 
-Stee 2: First run the GPU server   
+Step 2: First run the GPU server   
 
 ```bash
 cd ./local_evaluator     
@@ -32,7 +32,7 @@ sh cnn_evaluator.sh [num_gpu] [pipe file path]
 ```
 
 * `num_gpu`         the number of GPUs (1-8) you have for the current machine. 
-* `pipe file path`  The location that the pipe file is settled. Default is /data/local/go
+* `pipe file path`  The path that the pipe file is settled. Default is `/data/local/go`. If you have specific other path, then you need to specify the same when running `cnnPlayerMCTSV2.lua`
 
 Example: `sh cnn_evaluator.sh 4 /data/local/go`
 
