@@ -74,7 +74,7 @@ Trouble Shooting
 **Q**: My program hanged on genmove/quit, what happened?  
 **A**: Make sure you run the GPU server under ./local\_evaluator, the server remains active and the pipe file path matches between the server and the client.
 
-If you have any questions, please *open a Github issue*.
+If you have any questions, please **open a Github issue** by clicking *"Issues"* tab and then click *"New Issue"*.
 
 Code Overview
 -------------
