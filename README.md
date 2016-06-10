@@ -32,9 +32,9 @@ sh cnn_evaluator.sh [num_gpu] [pipe file path]
 ```
 
 * `num_gpu`         the number of GPUs (1-8) you have for the current machine. 
-* `pipe file path`  The location that the pipe file is settled. Default is /data/local/go/
+* `pipe file path`  The location that the pipe file is settled. Default is /data/local/go
 
-Example code: `sh cnn_evaluator.sh 4 /data/local/go`
+Example: `sh cnn_evaluator.sh 4 /data/local/go`
 
 Step 3: Run the main program
 
@@ -44,6 +44,11 @@ th cnnPlayerMCTSV2.lua [options]
 ```
 
 See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run (assuming you have 4 GPUs), you could use:
+
+```bash
+th cnnPlayerMCTSV2.lua --num_gpu [num_gpu] --time_limits 10
+```   
+or
 
 ```bash
 th cnnPlayerMCTSV2.lua --use_formal_params --time_limits 10
