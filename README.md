@@ -16,7 +16,7 @@ Then just compile with the following command:
 sh ./compile.sh
 ```
 
-GCC 4.8+ is required. Tested in CentOS 6.5. It can also run on other Linux platform (but not tested yet). 
+GCC 4.8+ is required. Depending on the location of your C++ compiler, please change the script accordingly. Tested in CentOS 6.5.
 
 Usage
 ------------
