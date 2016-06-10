@@ -21,7 +21,6 @@ local CNNPlayerV2 = require 'cnnPlayerV2.cnnPlayerV2Framework'
 local board = require 'board.board'
 local pl = require 'pl.import_into'()
 
---default_policy_pattern_file (default "/mnt/vol/gfsai-oregon/ai-group/users/yuandong/go/pattern_cnt1_0.05_atari_noglobal_ko_n9_conv_tygem-5-50.bin") The default policy pattern file --default_policy_pattern_file (default "/mnt/vol/gfsai-oregon/ai-group/users/qucheng/pattern10000_cnt1_0.05_atari_noglobal_ko_n9_conv_100000harvest-4-50.bin") The patter file
 local opt = pl.lapp[[
     --rollout         (default 1000)         The number of rollout we use.
     --dcnn_rollout    (default -1)           The number of dcnn rollout we use (If we set to -1, then it is the same as rollout), if cpu_only is set, then dcnn_rollout is not used.
@@ -31,7 +30,7 @@ local opt = pl.lapp[[
     --max_send_attempts (default 3)          #attempts to send to the server.
     --pipe_path         (default "/data/local/go/") Pipe path
     --tier_name         (default "ai.go-evaluator") Tier name
-    --server_type       (default "local")                 We can choose "local" or "cluster"
+    --server_type       (default "local")    We can choose "local" or "cluster". For open source version, for now "cluster" is not usable.
     --tree_to_json                           Whether we save the tree to json file for visualization. Note that pipe_path will be used.
     --num_tree_thread   (default 16)         The number of threads used to expand MCTS tree.
     --num_gpu           (default 1)          The number of gpus to use for local play.
@@ -71,7 +70,6 @@ local opt = pl.lapp[[
     --use_formal_params                               If so, then use formal parameters
 ]]
 
---default_policy_pattern_file (default "/mnt/vol/gfsai-oregon/ai-group/users/yuandong/go/pattern10000_cnt1_0.05_atari_noglobal_ko_n9_conv_100000harvest_2-5-50.bin") The default policy pattern file.
 local function load_params_for_formal_game()
     opt.rollout = 1000000  --       (default 1000)         The number of rollout we use.
     opt.dcnn_rollout = -1          -- The number of dcnn rollout we use (If we set to -1, then it is the same as rollout), if cpu_only is set, then dcnn_rollout is not used.

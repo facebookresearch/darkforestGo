@@ -33,9 +33,11 @@ sh cnn_evaluator.sh [num_gpu] [pipe file path]
 Step 2: Run the main program
 
 ```bash
-cd ./CNNPlayerV2     
-th cnnPlayerMCTSV2.lua --num_gpu [num_gpu]
+cd ./cnnPlayerV2     
+th cnnPlayerMCTSV2.lua [options]
 ```
+
+See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run, you could use `--use\_formal\_params --time\_limits 10`.   
 
 When you are in the interactive environment, type 
 
@@ -44,7 +46,7 @@ When you are in the interactive environment, type
 * `play w Q4`    to play a move at Q4 for specific color.
 * `quit`         to quit.
 
-For more commands, please use command `list_commands`, check the details of [GTP protocol](http://senseis.xmp.net/?GTP) or take a look at the source code (in ./CNNPlayerV2/cnnPlayerV2Framework.lua). 
+For more commands, please use command `list_commands`, check the details of [GTP protocol](http://senseis.xmp.net/?GTP) or take a look at the source code.
 
 Award
 --------------
@@ -86,10 +88,10 @@ Simple utilities, e.g., read/write sgf files.
 Test utilities.
 
 * `./train`  
-Training code (to be released soon).
+Training code (will be released soon).
 
 * `./models`  
-All pre-trained models. Please download them elsewhere.
+All pre-trained models. Please download them [here](https://www.dropbox.com/sh/6nm8g8z163omb9f/AABQxJyV7EIdbHKd9rnPQGnha?dl=0) and save to the `./models` directory.
 
 * `./sgfs`
 Some exemplar sgf files.
