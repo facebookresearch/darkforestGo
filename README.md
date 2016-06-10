@@ -3,12 +3,18 @@ Facebook DarkForest Go Project
 
 Build
 ------------
-Dependency: 
+Dependencies: 
 
 1. Install [torch7](http://torch.ch/docs/getting-started.html).
-2. Install luarocks: class, image, tds, cudnn
-
-For Cudnn, please install the driver from NVidia. This program supports 1-4 GPUs.
+2. [Install CUDA / CuDNN](https://github.com/facebook/fb.resnet.torch/blob/master/INSTALL.md)
+2. Install a few packages
+```bash
+luarocks install class
+luarocks install image
+luarocks install tds
+luarocks install cudnn
+```
+ This program supports 1 to 4 GPUs.
 
 Then just compile with the following command:
 
@@ -16,7 +22,8 @@ Then just compile with the following command:
 sh ./compile.sh
 ```
 
-GCC 4.8+ is required. Depending on the location of your C++ compiler, please change the script accordingly. Tested in CentOS 6.5.
+GCC 4.8+ is required. Depending on the location of your C++ compiler, please change the script accordingly. 
+Tested in CentOS 6.5 and Ubuntu 14.04.
 
 Usage
 ------------
@@ -132,7 +139,7 @@ Some exemplar sgf files.
 
 License
 ----------
-Please check LICENSE file for the license of Facebook DarkForest Go engine. 
+Please check the LICENSE file for the license of Facebook DarkForest Go engine. 
 
 Acknowledgement
 ---------
@@ -145,6 +152,15 @@ If you use the pre-trained models or any engine, please reference the following 
 ```
 Better Computer Go Player with Neural Network and Long-term Prediction, ICLR 2016  
 Yuandong Tian, Yan Zhu
+
+@article{tian2015better,
+  title={Better Computer Go Player with Neural Network and Long-term Prediction},
+  author={Tian, Yuandong and Zhu, Yan},
+  journal={arXiv preprint arXiv:1511.06410},
+  year={2015}
+}
+
+
 ```
 
 Here is the arxiv [link](http://arxiv.org/abs/1511.06410)
