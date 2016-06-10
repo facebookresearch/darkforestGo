@@ -41,7 +41,7 @@ echo Create liblocalexchanger.so
 $CXX -shared -o liblocalexchanger.so comm_pipe.o cnn_local_exchanger.o board.o common.o -lm 
 
 echo Compile all test codes
-$CXX $CPP_FLAGS -lm -lpthread mctsv2/test_playout_multithread.c tree.o playout_multithread.o board.o common.o playout_callbacks.o comm_pipe.o event_count.o tree_search.o cnn_local_exchanger.o default_policy.o default_policy_common.o pattern.o pattern_v2.o rank_move.o moggy.o board_interface.o 1lib.o 2lib.o ladder.o nakade.o nlib.o selfatari.o -I./common -I./board -o test_playout_multithread
+$CXX $CPP_FLAGS -lm -pthread mctsv2/test_playout_multithread.c tree.o playout_multithread.o board.o common.o playout_callbacks.o comm_pipe.o event_count.o tree_search.o cnn_local_exchanger.o default_policy.o default_policy_common.o pattern.o pattern_v2.o rank_move.o moggy.o board_interface.o 1lib.o 2lib.o ladder.o nakade.o nlib.o selfatari.o -I./common -I./board -o test_playout_multithread
 
 echo Put all .so file into directory so that lua could load
 DEST_DIR=./libs
