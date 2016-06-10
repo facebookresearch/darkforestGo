@@ -6,6 +6,9 @@
 // LICENSE file in the root directory of this source tree. An additional grant 
 // of patent rights can be found in the PATENTS file in the same directory.
 // 
+// This file is inspired by Pachi's engine (https://github.com/pasky/pachi). 
+// The main DarkForest engine (when specified with `--playout_policy v2`) does not depend on it. 
+// However, the simple policy opened with `--playout_policy simple` will use this library.
 
 #ifndef _PATTERN_H_
 #define _PATTERN_H_
