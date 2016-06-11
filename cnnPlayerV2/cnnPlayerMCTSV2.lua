@@ -82,7 +82,6 @@ local function load_params_for_formal_game()
     opt.server_type = "local" --       (default "local")                 We can choose "local" or "cluster"
     opt.tree_to_json = false --                           Whether we save the tree to json file for visualization. Note that pipe_path will be used.
     opt.num_tree_thread = 16 --   (default 16)         The number of threads used to expand MCTS tree.
-    opt.num_gpu = 4 --           (default 1)          The number of gpus to use for local play.
     opt.num_virtual_games = 5
     opt.acc_prob_thres = 1 --    (default 0.8)        Accumulated probability threshold. We remove the remove if by the time we see it, the accumulated prob is greater than this thres.
     opt.max_num_move = 7 --      (default 20)          Maximum number of moves to consider in each tree node.
