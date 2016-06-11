@@ -117,19 +117,18 @@ function play_one_game(model, b, dcnn_opt, opt)
 end
 
 local opt = pl.lapp[[
-    -i,--input             (default "/mnt/vol/gfsai-cached-oregon/ai-group/users/yuandong/cmd/devgpu017.ash3.facebook.com/t1440268104_20150822_112824/model-epoch_81.bin")          Input CNN models.
-    --codename             (default "df2_cpu_east")          Code name for models. If this is not empty then --input will be omitted.
+    --codename             (default "df2_cpu")   Code name for models. If this is not empty then --input will be omitted.
     -f,--feature_type      (default "old")       By default we only test old features. If codename is specified, this is omitted.
     -r,--rank              (default "9d")        We play in the level of rank.
     --use_local_model                            Whether we just load local model from the current path
     --komi                 (default 7.5)         The komi we used
     --handi                (default 0)           The handicap stones we placed.
     -c,--usecpu            (default 1)           Whether we use cpu to run the program.
-    --shuffle_top_n        (default 300)           We random choose one of the first n move and play it.
+    --shuffle_top_n        (default 300)         We random choose one of the first n move and play it.
     --debug                                      Wehther we use debug mode
     --num_games            (default 10)          The number of games to be played.
-    --sample_step          (default -1)         Sample at a particular step.
-    --presample_codename   (default "df_cpu_east")
+    --sample_step          (default -1)          Sample at a particular step.
+    --presample_codename   (default "df_cpu")
     --presample_ft         (default "old")
     --copy_path            (default "")
 ]]

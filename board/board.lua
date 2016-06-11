@@ -25,12 +25,6 @@ board.resign = tonumber(symbols.M_RESIGN)
 board.chinese_rule = tonumber(symbols.RULE_CHINESE)
 board.japanese_rule = tonumber(symbols.RULE_JAPANESE)
 
--- local abspath = script_path()
--- local C = ffi.load(paths.concat(abspath, "libboard.so"))
--- Safe since ids will be loaded separated for each thread.
--- local libpath = "/home/yuandong/board/libboard.so"
--- local libpath = '/mnt/vol/gfsai-cached-oregon/ai-group/users/yuandong/go/lib/libboard.so'
--- local C = ffi.load(paths.concat(common.lib_path, "libboard.so"))
 local C = ffi.load(paths.concat(script_path, "../libs/libboard.so"))
 board.C = C
 board.s = s

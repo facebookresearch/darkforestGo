@@ -31,9 +31,6 @@ end
 
 local script_path = common.script_path()
 
--- common.lib_path = '/mnt/vol/gfsai-oregon/ai-group/users/yuandong/go/distributed17'
---common.lib_path = '/home/' .. os.getenv('USER') .. '/fbsource/
-
 -- Codename for models and their path
 common.codenames = {
     darkforest = {
@@ -51,36 +48,6 @@ common.codenames = {
     df2_cpu = {
         model_name = paths.concat(script_path, "../models/df2_cpu.bin"), 
         feature_type = 'extended'
-    },
-    df2_cpu_east = {
-        model_name = "/mnt/vol/gfsai-east/ai-group/users/yzhu/2016/df2_cpu/model_single.bin",
-        feature_type = 'extended'
-    },
-
-    df_cpu = {
-        model_name = "/mnt/vol/gfsai-oregon/ai-group/users/yzhu/2016/df_cpu/model_single.bin",
-        feature_type = 'old'
-    },
-    df_cpu_east = {
-        model_name = "/mnt/vol/gfsai-east/ai-group/users/yzhu/2016/df_cpu/model_single.bin",
-        feature_type = 'old'
-    },
-
-    darkfores3 = {
-        model_name = "/mnt/vol/gfsai-oregon/ai-group/users/yzhu/models/kgs-finetune/model_single.bin",
-        feature_type = "complete"
-    },
-    darkfores4 = {
-        model_name = "/mnt/vol/gfsai-bistro/ai-group/bistro/gpu/yuandong/20151217/main_sgf.lar.00_02_50.zYCC04iO/model_single.bin",
-        feature_type = "extended_with_attention"
-    },
-    darkfores5 = {
-        model_name = "/mnt/vol/gfsai-bistro/ai-group/bistro/gpu/yuandong/20151228/main_sgf.lar.10_48_53.GYfnF26T/model_single_140.bin",
-        feature_type = "extended"
-    },
-    tsumego1 = {
-        model_name = "/mnt/vol/gfsai-oregon/ai-group/users/yuandong/cmd/devgpu059.prn2.facebook.com/t1440643456_20150826_194416/model_single.bin",
-        feature_type = "old"
     },
 }
 

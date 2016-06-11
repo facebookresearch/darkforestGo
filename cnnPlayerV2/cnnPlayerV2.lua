@@ -22,10 +22,10 @@ local board = require 'board.board'
 -- Load a model and wait for the input. 
 
 local opt = pl.lapp[[
-    -i,--input             (default "/mnt/vol/gfsai-cached-oregon/ai-group/users/yuandong/cmd/devgpu017.ash3.facebook.com/t1440268104_20150822_112824/model-epoch_81.bin")          Input CNN models.
-    -f,--feature_type      (default "old")       By default we only test old features:
-    -r,--rank              (default "9d")        We play in the level of rank.
-    -c,--usecpu                                  Whether we use cpu to run the program.
+    -i,--input             (default "./models/df2.bin")          Input CNN models.
+    -f,--feature_type      (default "old")                       By default we only test old features:
+    -r,--rank              (default "9d")                        We play in the level of rank.
+    -c,--usecpu                                                  Whether we use cpu to run the program.
 ]]
 
 -- opt.feature_type and opt.userank are necessary for the game to be played.

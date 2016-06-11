@@ -30,7 +30,7 @@ local opt = pl.lapp[[
   --async                                    Make it asynchronized.
   --pipe_path (default "./")                 Path for pipe file. Default is in the current directory, i.e., go/mcts
   --codename  (default "darkfores2")         Code name for the model to load.
-  --use_local_model                          If true, load the local model (when /mnt/vol/gfsai loading is problematic)
+  --use_local_model                          If true, load the local model. 
 ]]
 
 print("GPU used: " .. opt.gpu)

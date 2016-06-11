@@ -32,7 +32,6 @@ local max_batch = opt_internal.async and 128 or 32
 local num_attempt = 10
 
 cutorch.setDevice(opt_internal.gpu)
--- local model_filename = "/mnt/vol/gfsai-cached-oregon/ai-group/users/yuandong/cmd/devgpu017.ash3.facebook.com/t1440268104_20150822_112824/model-epoch_81.bin" 
 local model_filename = common.codenames[opt_internal.codename].model_name
 local feature_type = common.codenames[opt_internal.codename].feature_type
 assert(model_filename, "opt.codename [" .. opt_internal.codename .. "] not found!")

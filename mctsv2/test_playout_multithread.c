@@ -89,8 +89,7 @@ int main(int argc, char *argv[]) {
   tree_params.rcv_acc_percent_thres = 80;
   // tree_params.sigma = 0.00;
   tree_params.use_pondering = TRUE;
-  // strcpy(tree_params.pattern_filename, "/mnt/vol/gfsai-oregon/ai-group/users/yuandong/go/tygem-8thread-30-50.bin");
-  strcpy(tree_params.pattern_filename, "../board/tygem-8thread-30-50.bin");
+  strcpy(tree_params.pattern_filename, "../models/playout-model.bin");
   tree_params.default_policy_choice = DP_V2;
   tree_params.default_policy_temperature = 0.125;
 
