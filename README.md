@@ -53,12 +53,12 @@ th cnnPlayerMCTSV2.lua [options]
 See `cnnPlayerV2/cnnPlayerMCTSV2.lua` for a lot of options. For a simple first run (assuming you have 4 GPUs), you could use:
 
 ```bash
-th cnnPlayerMCTSV2.lua --num_gpu [num_gpu] --time_limits 10
+th cnnPlayerMCTSV2.lua --num_gpu [num_gpu] --time_limit 10
 ```   
 or (if you want to use a set of plausibly good parameters):
 
 ```bash
-th cnnPlayerMCTSV2.lua --use_formal_params --num_gpu [num_gpu] --time_limits 10
+th cnnPlayerMCTSV2.lua --use_formal_params --num_gpu [num_gpu] --time_limit 10
 ```   
 
 To load an existing game up to move 23:

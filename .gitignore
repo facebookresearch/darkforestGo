@@ -1,0 +1,6 @@
+*.o
+*.so
+*.swp
+models
+test_playout_multithread
+cnnPlayerV2/game-*.sgf
