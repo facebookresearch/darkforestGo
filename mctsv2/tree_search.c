@@ -26,22 +26,22 @@
 static void show_all_moves(const Board *board, const AllMoves *all_moves) {
   // Debug: dump all moves.
   ShowBoard(board, SHOW_LAST_MOVE);
-  printf("\n===========Potential moves ================:\n");
+  fprintf(stderr,"\n===========Potential moves ================:\n");
   for (int i = 0; i < all_moves->num_moves; ++i) {
-    printf("%s ", get_move_str(all_moves->moves[i], board->_next_player));
+    fprintf(stderr,"%s ", get_move_str(all_moves->moves[i], board->_next_player));
   }
-  printf("\n===========End Potential moves================\n");
+  fprintf(stderr,"\n===========End Potential moves================\n");
   fflush(stdout);
 }
 */
 
 static void show_all_cnn_moves(const TreeBlock *bl, Stone curr_player) {
   char buf[30];
-  printf("==== CNN Move for b = %lx, seq = %ld, status = %d ====\n", (uint64_t)bl, bl->cnn_data.seq, bl->cnn_data.evaluated);
+  fprintf(stderr,"==== CNN Move for b = %lx, seq = %ld, status = %d ====\n", (uint64_t)bl, bl->cnn_data.seq, bl->cnn_data.evaluated);
   for (int i = 0; i < bl->n; ++i) {
-      printf("%s [%f] ", get_move_str(bl->data.moves[i], curr_player, buf), bl->cnn_data.confidences[i]);
+      fprintf(stderr,"%s [%f] ", get_move_str(bl->data.moves[i], curr_player, buf), bl->cnn_data.confidences[i]);
   }
-  printf("\n==== End CNN Move ==========\n");
+  fprintf(stderr,"\n==== End CNN Move ==========\n");
   fflush(stdout);
 }
 
@@ -143,11 +143,11 @@ static int block_all_threads(TreeHandle *s, BOOL print_and_reset_all_stats) {
       leaf_expanded, num_policy_failed, num_expand_failed, preempt_playout_count);
   PRINT_INFO("Stats [Send] infunc = %d, attempt = %d, success = %d\n", cnn_send_infunc, cnn_send_attempt, cnn_send_success);
   PRINT_INFO("Stats [Policy] use_ucb = %d, use_cnn = %d, use_async = %d\n", use_ucb, use_cnn, use_async);
-  printf("p->root->data.stats[0].total: %d, #rollout: %d, #cnn: %d, max_depth: %d\n", s->p.root->data.stats[0].total, s->rollout_count, s->dcnn_count, max_depth);
+  fprintf(stderr,"p->root->data.stats[0].total: %d, #rollout: %d, #cnn: %d, max_depth: %d\n", s->p.root->data.stats[0].total, s->rollout_count, s->dcnn_count, max_depth);
 
   // Clear up the model.
   if (s->params.use_online_model) {
-    printf("Online model average error = %f, count = %d\n", s->model_acc_err / s->model_count_err, s->model_count_err);
+    fprintf(stderr,"Online model average error = %f, count = %d\n", s->model_acc_err / s->model_count_err, s->model_count_err);
     memset(s->model_weights, 0, sizeof(s->model_weights));
     s->model_bias = 0;
     s->model_acc_err = 0;
@@ -164,7 +164,7 @@ static int block_all_threads(TreeHandle *s, BOOL print_and_reset_all_stats) {
   // Check "search complete semaphore", clear it if necessary.
   int sem_value;
   sem_getvalue(&s->sem_search_complete, &sem_value);
-  printf("Semaphore value: %d\n", sem_value);
+  fprintf(stderr,"Semaphore value: %d\n", sem_value);
   if (sem_value > 0) sem_wait(&s->sem_search_complete);
   s->flag_search_complete = SC_NOT_YET;
   s->all_stats_cleared = TRUE;
@@ -268,11 +268,11 @@ static void wait_search_complete(TreeHandle *s) {
         reason = "SC_TIME_HEURISTIC_STAGE4";
         break;
       default:
-        printf("Error! unknown flag_search_complete = %d\n", s->flag_search_complete);
+        fprintf(stderr,"Error! unknown flag_search_complete = %d\n", s->flag_search_complete);
         error("");
     }
 
-    printf("Search Complete. Reason: %s\n", reason);
+    fprintf(stderr,"Search Complete. Reason: %s\n", reason);
   }
 }
 
@@ -317,15 +317,15 @@ static void *threaded_move_receiver(void *ctx) {
       double t_received_board = mmove.t_received - mmove.t_sent;
       double t_replied = mmove.t_replied - mmove.t_received;
       double t_received_move = wallclock() - mmove.t_replied;
-      printf("Received move: b = %lx, hostname = %s, board[send2rcv] = %lf, rcv2reply = %lf, move[send2rcv] = %lf\n", mmove.b, mmove.hostname, t_received_board, t_replied, t_received_move);
+      fprintf(stderr,"Received move: b = %lx, hostname = %s, board[send2rcv] = %lf, rcv2reply = %lf, move[send2rcv] = %lf\n", mmove.b, mmove.hostname, t_received_board, t_replied, t_received_move);
       fflush(stdout);
     }
 
-    // printf("Package received. b = %d, seq = %ld\n", mmove.b, mmove.seq);
+    // fprintf(stderr,"Package received. b = %d, seq = %ld\n", mmove.b, mmove.seq);
     // Check if the move is valid.
     if (bl == NULL) {
       if (verbose >= V_INFO) {
-        printf("Should never receive move instructions from b = NULL!\n");
+        fprintf(stderr,"Should never receive move instructions from b = NULL!\n");
         fflush(stdout);
       }
       continue;
@@ -387,7 +387,7 @@ static void *threaded_move_receiver(void *ctx) {
       if (m != M_PASS) {
         // set the corresponding bit to be one. note that there is no race condition since before the
         // final .evaluated bit is set, other thread will not use it.
-        // printf("%s ", get_move_str(m, mmove.player));
+        // fprintf(stderr,"%s ", get_move_str(m, mmove.player));
 
         // bl->data.moves[bl->n] = m;
         // bl->cnn_data.confidences[bl->n] = mmove.probs[i];
@@ -450,7 +450,7 @@ static void *threaded_move_receiver(void *ctx) {
       char notation = '*';
       for (int i = 0; i < NUM_FIRST_MOVES; ++i) {
         if (accumulated >= rcv_acc_prob_thres) notation = ' ';
-        printf("[%d]: x:  %d, y: %d, conf = %f [%c]\n", i, mmove.xs[i], mmove.ys[i], mmove.probs[i], notation);
+        fprintf(stderr,"[%d]: x:  %d, y: %d, conf = %f [%c]\n", i, mmove.xs[i], mmove.ys[i], mmove.probs[i], notation);
         accumulated += mmove.probs[i];
       }
       PRINT_CRITICAL("cnn returned for b = %lx, seq = %ld, id = %u, %d moves are ready.\n", (uint64_t)bl, mmove.seq, ID(bl), bl->n);
@@ -513,45 +513,45 @@ void tree_search_init_params(TreeParams *params) {
 
 void tree_search_print_params(void *ctx) {
   if (ctx == NULL) {
-    printf("Cannot print search params since ctx is NULL\n");
+    fprintf(stderr,"Cannot print search params since ctx is NULL\n");
     return;
   }
   TreeHandle *s = (TreeHandle *)ctx;
   const TreeParams *params = &s->params;
 
   // Print all search parameters.
-  printf("Verbose: %d\n", params->verbose);
-  printf("#Threads: %d\n", params->num_tree_thread);
-  printf("#Receivers: %d\n", params->num_receiver);
-  if (params->num_virtual_games == 0) printf("Sigma: %.2f, over n: %s\n", params->sigma, STR_BOOL(params->use_sigma_over_n));
-  else printf("#Virtual games: %d\n", params->num_virtual_games);
-  printf("Async mode: %s\n", STR_BOOL(params->use_async));
-  printf("RAVE: %s\n", STR_BOOL(params->use_rave));
-  printf("UCT: %s\n", params->use_old_uct ? "old" : "PUCT");
-  printf("num_rollout: %d\n", params->num_rollout);
-  printf("num_rollout_per_move: %d\n", params->num_rollout_per_move);
-  printf("num_dcnn_per_move: %d\n", params->num_dcnn_per_move);
-  printf("rcv_acc_percent_thres: %d\n", params->rcv_acc_percent_thres);
-  printf("rcv_max_num_move: %d\n", params->rcv_max_num_move);
-  printf("rcv_min_num_move: %d\n", params->rcv_min_num_move);
-  printf("expand_n_thres: %d\n", params->expand_n_thres);
-  printf("decision_mixture_ratio: %.1f\n", params->decision_mixture_ratio);
-  printf("Use pondering: %s\n", STR_BOOL(params->use_pondering));
-  printf("Time limit: %ld\n", params->time_limit);
-  printf("%% of threads running playout when expanding node: %d\n", params->percent_playout_in_expansion);
+  fprintf(stderr,"Verbose: %d\n", params->verbose);
+  fprintf(stderr,"#Threads: %d\n", params->num_tree_thread);
+  fprintf(stderr,"#Receivers: %d\n", params->num_receiver);
+  if (params->num_virtual_games == 0) fprintf(stderr,"Sigma: %.2f, over n: %s\n", params->sigma, STR_BOOL(params->use_sigma_over_n));
+  else fprintf(stderr,"#Virtual games: %d\n", params->num_virtual_games);
+  fprintf(stderr,"Async mode: %s\n", STR_BOOL(params->use_async));
+  fprintf(stderr,"RAVE: %s\n", STR_BOOL(params->use_rave));
+  fprintf(stderr,"UCT: %s\n", params->use_old_uct ? "old" : "PUCT");
+  fprintf(stderr,"num_rollout: %d\n", params->num_rollout);
+  fprintf(stderr,"num_rollout_per_move: %d\n", params->num_rollout_per_move);
+  fprintf(stderr,"num_dcnn_per_move: %d\n", params->num_dcnn_per_move);
+  fprintf(stderr,"rcv_acc_percent_thres: %d\n", params->rcv_acc_percent_thres);
+  fprintf(stderr,"rcv_max_num_move: %d\n", params->rcv_max_num_move);
+  fprintf(stderr,"rcv_min_num_move: %d\n", params->rcv_min_num_move);
+  fprintf(stderr,"expand_n_thres: %d\n", params->expand_n_thres);
+  fprintf(stderr,"decision_mixture_ratio: %.1f\n", params->decision_mixture_ratio);
+  fprintf(stderr,"Use pondering: %s\n", STR_BOOL(params->use_pondering));
+  fprintf(stderr,"Time limit: %ld\n", params->time_limit);
+  fprintf(stderr,"%% of threads running playout when expanding node: %d\n", params->percent_playout_in_expansion);
   if (params->use_cnn_final_score) {
-    printf("Minimal ply for cnn final score: %d\n", params->min_ply_to_use_cnn_final_score);
-    printf("Final mixture ratio: %f\n", params->final_mixture_ratio);
-    printf("Final score = final_mixture_ratio * win_rate_prediction + (1.0 - final_mixture_ratio) * playout_result.\n");
+    fprintf(stderr,"Minimal ply for cnn final score: %d\n", params->min_ply_to_use_cnn_final_score);
+    fprintf(stderr,"Final mixture ratio: %f\n", params->final_mixture_ratio);
+    fprintf(stderr,"Final score = final_mixture_ratio * win_rate_prediction + (1.0 - final_mixture_ratio) * playout_result.\n");
   }
-  printf("single_move_return: %s\n", STR_BOOL(params->single_move_return));
-  printf("default_policy: %s [%d, T: %.3lf]\n", def_policy_str(params->default_policy_choice), params->default_policy_sample_topn, params->default_policy_temperature);
+  fprintf(stderr,"single_move_return: %s\n", STR_BOOL(params->single_move_return));
+  fprintf(stderr,"default_policy: %s [%d, T: %.3lf]\n", def_policy_str(params->default_policy_choice), params->default_policy_sample_topn, params->default_policy_temperature);
   if (params->life_and_death_mode) {
-    printf("Life and death mode. Use tsumego_dcnn: %s, Region: [%d, %d, %d, %d]\n",
+    fprintf(stderr,"Life and death mode. Use tsumego_dcnn: %s, Region: [%d, %d, %d, %d]\n",
         STR_BOOL(params->use_tsumego_dcnn), params->ld_region.left, params->ld_region.top, params->ld_region.right, params->ld_region.bottom);
   }
   if (params->use_online_model) {
-    printf("Online model alpha: %f, mixture ratio: %f\n", params->online_model_alpha, params->online_prior_mixture_ratio);
+    fprintf(stderr,"Online model alpha: %f, mixture ratio: %f\n", params->online_model_alpha, params->online_prior_mixture_ratio);
   }
 }
 
@@ -586,12 +586,12 @@ static void internal_set_params(TreeHandle *s, const TreeParams *new_params) {
 
 // =================================== Main thread for Monte Carlo Tree Search ===============================
 void thread_callback_blocks_init(TreePool *p, TreeBlock *b, void *context, void *context2) {
-  // printf("Before we do anything...\n");
+  // fprintf(stderr,"Before we do anything...\n");
   // fflush(stdout);
   ThreadInfo *info = (ThreadInfo *)context;
   TreeHandle *s = info->s;
 
-  // printf("Pass the type conversion...info = %lx\n", (uint64_t)info);
+  // fprintf(stderr,"Pass the type conversion...info = %lx\n", (uint64_t)info);
   if (info == NULL) error("ThreadInfo cannot be NULL!");
   // fflush(stdout);
   // Set the board hash.
@@ -623,10 +623,10 @@ int expand_leaf(ThreadInfo* info, TreeBlock *parent, BlockOffset parent_offset, 
       PRINT_DEBUG("We take the lead and set up the node: b2 = %u, b2_offset = %u, expansion = %u, cnn.evaluated = %u\n",
           ID(parent), parent_offset, (unsigned int)parent->expansion, (unsigned int)parent->cnn_data.evaluated);
 
-      // printf("info = %lx, board = %lx, p = %lx, parent = %lx, parent_offset = %d\n", (uint64_t)info, (uint64_t)board, (uint64_t)p, (uint64_t)parent, parent_offset);
+      // fprintf(stderr,"info = %lx, board = %lx, p = %lx, parent = %lx, parent_offset = %d\n", (uint64_t)info, (uint64_t)board, (uint64_t)p, (uint64_t)parent, parent_offset);
       *c = tree_simple_g_alloc(p, (void *)info, (void *)board, thread_callback_blocks_init, parent, parent_offset);
       if (*c == TP_NULL) {
-        printf("allocation error, output TP_NULL!\n");
+        fprintf(stderr,"allocation error, output TP_NULL!\n");
         error("");
       }
       info->leaf_expanded ++;
@@ -658,10 +658,10 @@ static inline BOOL threaded_block_if_needed(void *ctx) {
   if (blocking_number > 0) {
     int count = __sync_add_and_fetch(&s->threads_count, 1);
     if (count == 1) {
-      printf("First thread blocked at %lf\n", wallclock());
+      fprintf(stderr,"First thread blocked at %lf\n", wallclock());
     }
     if (count == s->params.num_tree_thread) {
-      printf("Last thread blocked at %lf\n", wallclock());
+      fprintf(stderr,"Last thread blocked at %lf\n", wallclock());
       sem_post(&s->sem_all_threads_blocked);
     }
     sem_wait(&s->sem_all_threads_unblocked);
@@ -718,7 +718,7 @@ static inline void heuristic_time_control(ThreadInfo *info, long time_elapsed) {
       float time_limit = (THRES_PLY3 - s->board._ply) * s->common_params->max_time_spent;
       time_limit /= (THRES_PLY3 - THRES_PLY2);
       if (time_elapsed >= time_limit) {
-        // printf("time_limit = %f, time_elapsed = %ld, max_time_spent = %lf, min_time_spent = %lf\n", time_limit, time_elapsed, s->common_params->max_time_spent, s->common_params->min_time_spent);
+        // fprintf(stderr,"time_limit = %f, time_elapsed = %ld, max_time_spent = %lf, min_time_spent = %lf\n", time_limit, time_elapsed, s->common_params->max_time_spent, s->common_params->min_time_spent);
         send_search_complete(s, SC_TIME_HEURISTIC_STAGE3);
       }
     } else {
@@ -787,7 +787,7 @@ static inline void threaded_if_search_complete(void *ctx) {
     if (first_child != NULL) {
       int nchild = __atomic_load_n(&first_child->n, __ATOMIC_ACQUIRE);
       if (nchild == 1) {
-        if (send_search_complete(s, SC_SINGLE_MOVE_RETURN)) printf("One child in the root, No need to do search.\n");
+        if (send_search_complete(s, SC_SINGLE_MOVE_RETURN)) fprintf(stderr,"One child in the root, No need to do search.\n");
       }
     }
   }
@@ -843,7 +843,7 @@ static void *threaded_expansion(void *ctx) {
     // Whether the board is pointing towards the child node.
     BOOL board_on_child = FALSE;
     // PRINT_DEBUG("---Start playout %d/%d ---\n", i, info->s->num_rollout_per_thread);
-    // printf("---Start playout %d/%d ---\n", i, info->s->num_rollout_per_thread);
+    // fprintf(stderr,"---Start playout %d/%d ---\n", i, info->s->num_rollout_per_thread);
     int depth = 0;
     while (1) {
       // Pick a random child.
@@ -873,17 +873,17 @@ static void *threaded_expansion(void *ctx) {
       // if (m == M_PASS) error("No move should be PASS!! (Except from p->root)");
 
       if (! TryPlay2(&board, m, &ids)) {
-        printf("============= ErrorMessage =================\n");
+        fprintf(stderr,"============= ErrorMessage =================\n");
         ShowBoard(&board, SHOW_LAST_MOVE);
-        printf("\n");
-        printf("Depth = %d\n", depth);
+        fprintf(stderr,"\n");
+        fprintf(stderr,"Depth = %d\n", depth);
         tree_simple_show_block(b);
         show_all_cnn_moves(b, board._next_player);
         error("The play %s should never fail!", get_move_str(m, board._next_player, buf));
       }
 
       // ShowBoard(&board, SHOW_LAST_MOVE);
-      // printf("Current move: %s\n", get_move_str(m, curr_player, buf));
+      // fprintf(stderr,"Current move: %s\n", get_move_str(m, curr_player, buf));
       Play(&board, &ids);
 
       if (leaf_expanded) {
@@ -892,7 +892,7 @@ static void *threaded_expansion(void *ctx) {
       }
 
       // Expand it or go downward
-      // printf("[Explore %d]: pick idx = %d/%d, block_parent = %d, child b = %d\n", b, child_idx, total_children, b2, c);
+      // fprintf(stderr,"[Explore %d]: pick idx = %d/%d, block_parent = %d, child b = %d\n", b, child_idx, total_children, b2, c);
       if (c != TP_NULL) {
         b = c;
       } else {
@@ -945,7 +945,7 @@ static void *threaded_expansion(void *ctx) {
 
     // Add the total rollout_count count.
     __sync_fetch_and_add(&s->rollout_count, 1);
-    // printf("---End playout %d/%d [Round %d]---\n", i, K, round);
+    // fprintf(stderr,"---End playout %d/%d [Round %d]---\n", i, K, round);
     //
     // tree_pool_check(p);
   }
@@ -957,17 +957,17 @@ BOOL tree_search_set_params(void *ctx, const TreeParams *new_params) {
   if (ctx == NULL || new_params == NULL) return FALSE;
   TreeHandle *s = (TreeHandle *)ctx;
 
-  printf("Set_params! And block all threads!\n");
+  fprintf(stderr,"Set_params! And block all threads!\n");
   block_all_threads(s, TRUE);
 
-  printf("Change params!\n");
+  fprintf(stderr,"Change params!\n");
   internal_set_params(s, new_params);
 
   // Reset the seq number
   unsigned long new_seq = time(NULL);
   s->seq = (new_seq > s->seq ? new_seq : s->seq + 1);
 
-  printf("Set_params! And resume all threads!\n");
+  fprintf(stderr,"Set_params! And resume all threads!\n");
   resume_all_threads(s);
   return TRUE;
 }
@@ -1051,7 +1051,7 @@ void *tree_search_init(const SearchParamsV2 *common_params, const SearchVariants
       PatternV2PrintStats(s->def_policy);
       break;
     default:
-      printf("Unknown default policy choice: %d\n", s->params.default_policy_choice);
+      fprintf(stderr,"Unknown default policy choice: %d\n", s->params.default_policy_choice);
       error("");
   }
 
@@ -1180,7 +1180,7 @@ void tree_search_start(void *ctx) {
     info->preempt_playout_count = 0;
     info->max_depth = 0;
 
-    // printf("Starting thread = %d, #rollout = %d\n", i, infos[i].num_rollout_per_thread);
+    // fprintf(stderr,"Starting thread = %d, #rollout = %d\n", i, infos[i].num_rollout_per_thread);
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 1048576);
@@ -1227,9 +1227,9 @@ void tree_search_thread_off(void *ctx) {
   TreeHandle *s = (TreeHandle *)ctx;
   int res = block_all_threads(s, FALSE);
   if (res == THREAD_NEW_BLOCKED) {
-    printf("All threads blocked!\n");
+    fprintf(stderr,"All threads blocked!\n");
   } else {
-    printf("Threads already blocked!\n");
+    fprintf(stderr,"Threads already blocked!\n");
   }
 }
 
@@ -1238,11 +1238,11 @@ void tree_search_thread_on(void *ctx) {
   TreeHandle *s = (TreeHandle *)ctx;
   int res = resume_all_threads(s);
   if (res == THREAD_NEW_RESUMED) {
-    printf("All threads resumed!\n");
+    fprintf(stderr,"All threads resumed!\n");
   } else if (res == THREAD_ALREADY_RESUMED) {
-    printf("Threads are alredy running!\n");
+    fprintf(stderr,"Threads are alredy running!\n");
   } else {
-    printf("Threads are still blocking\n");
+    fprintf(stderr,"Threads are still blocking\n");
   }
 }
 
@@ -1318,7 +1318,7 @@ Coord pick_best(const TreeHandle *s, TreeBlock *b, Stone player, float *highest_
     float score = this_n;
     /*
     if (s->params.verbose >= V_DEBUG) {
-      printf("[%s]: n = %d, win = %d, winrate = %f, score = %f, cnn_conf = %f\n",
+      fprintf(stderr,"[%s]: n = %d, win = %d, winrate = %f, score = %f, cnn_conf = %f\n",
           get_move_str(m, player), this_n, win, winning_rate, score, bl->cnn_data.confidences[cursor.i]);
     }
     */
@@ -1398,10 +1398,10 @@ static void show_picked_move_cnn_impl(const TreeHandle *s, TreeBlock *b, Stone p
 
     if (s->params.life_and_death_mode) {
      // if (this_n > 0) {
-        printf("%s[%s]%c: b: %d, w: %d, n: %d, pred: %.3f, terminal: %s %s\n", space_str, get_move_str(m, player, buf), picked, b->cnn_data.ps[i].b, b->cnn_data.ps[i].w, this_n, online_pred, STR_STONE(terminal_status), buf2);
+        fprintf(stderr,"%s[%s]%c: b: %d, w: %d, n: %d, pred: %.3f, terminal: %s %s\n", space_str, get_move_str(m, player, buf), picked, b->cnn_data.ps[i].b, b->cnn_data.ps[i].w, this_n, online_pred, STR_STONE(terminal_status), buf2);
      // }
     } else {
-      printf("%s[%s]%c: %.3f (%.2f/%d), %s, %s, cnn = %.3f, fast_cnn = %.3f, pred = %.3f, terminal = %s %s%s\n", space_str, get_move_str(m, player, buf), picked, winning_rate, win, this_n, type_str, status_str, cnn_conf, fast_conf, online_pred, STR_STONE(terminal_status), buf3, buf2);
+      fprintf(stderr,"%s[%s]%c: %.3f (%.2f/%d), %s, %s, cnn = %.3f, fast_cnn = %.3f, pred = %.3f, terminal = %s %s%s\n", space_str, get_move_str(m, player, buf), picked, winning_rate, win, this_n, type_str, status_str, cnn_conf, fast_conf, online_pred, STR_STONE(terminal_status), buf3, buf2);
     }
 
     if (chosen == m) {
@@ -1426,9 +1426,9 @@ void tree_search_print_tree(void *ctx) {
   TreeBlock *b = p->root->children[0].child;
 
   // print the address b and seq number.
-  printf("b = %lx, seq = %ld\n", (uint64_t)b, s->seq);
+  fprintf(stderr,"b = %lx, seq = %ld\n", (uint64_t)b, s->seq);
   show_picked_move_cnn_impl(s, b, s->board._next_player, 0);
-  printf("Ply: %d, ld_mode: %s, def_policy: %s [%d, T: %.3lf], Async: %s, CPU_ONLY: %s, online: %s, cnn_final_score: %s, min_ply_use_final: %d, final_mixture_ratio: %.1f\n",
+  fprintf(stderr,"Ply: %d, ld_mode: %s, def_policy: %s [%d, T: %.3lf], Async: %s, CPU_ONLY: %s, online: %s, cnn_final_score: %s, min_ply_use_final: %d, final_mixture_ratio: %.1f\n",
       s->board._ply, STR_BOOL(s->params.life_and_death_mode), def_policy_str(s->params.default_policy_choice), s->params.default_policy_sample_topn,
       s->params.default_policy_temperature, STR_BOOL(s->params.use_async), STR_BOOL(s->common_params->cpu_only), STR_BOOL(s->params.use_online_model),
       STR_BOOL(s->params.use_cnn_final_score), s->params.min_ply_to_use_cnn_final_score, s->params.final_mixture_ratio);
@@ -1538,7 +1538,7 @@ static void tree_dump_feature_impl(TreeHandle *s, const Board *board, TreeBlock 
     if (n == 0) {
       SaveMoveWithFeature(board, s->params.defender, bl->data.moves[i], 1, fp);
       /*
-      printf("Positive moves: b = %lx, seq = %ld\n", (uint64_t)bl->children[i].child, bl->children[i].child == NULL ? 0 : bl->children[i].child->cnn_data.seq);
+      fprintf(stderr,"Positive moves: b = %lx, seq = %ld\n", (uint64_t)bl->children[i].child, bl->children[i].child == NULL ? 0 : bl->children[i].child->cnn_data.seq);
       Board b2;
       CopyBoard(&b2, board);
       TryPlay2(&b2, bl->data.moves[i], &ids);
@@ -1655,7 +1655,7 @@ void tree_search_prune_opponent(void *ctx, Coord m) {
   }
 
   if (s->params.verbose >= V_DEBUG) {
-    printf("Check the pool...\n");
+    fprintf(stderr,"Check the pool...\n");
     tree_simple_pool_check(p);
   }
 
@@ -1681,8 +1681,8 @@ BOOL tree_search_undo_pass(void *ctx, const Board *before_board) {
   // We don't need to do anything for the tree, since the tree is already cleaned up by the Previous PASS.
   // If the previous move is not pass, then UndoPass returns FALSE and nothing happens.
   // So this is not really an undo, since the previous tree is already deleted.
-  // printf("Perform undo pass... next_player = %d\n", s->board._next_player);
-  // printf("last4 = %d, last3 = %d, last2 = %d, last = %d\n", s->board._last_move4, s->board._last_move3, s->board._last_move2, s->board._last_move);
+  // fprintf(stderr,"Perform undo pass... next_player = %d\n", s->board._next_player);
+  // fprintf(stderr,"last4 = %d, last3 = %d, last2 = %d, last = %d\n", s->board._last_move4, s->board._last_move3, s->board._last_move2, s->board._last_move);
   BOOL res = UndoPass(&s->board);
   if (res && before_board != NULL) {
     // Recover _last_move4
@@ -1693,8 +1693,8 @@ BOOL tree_search_undo_pass(void *ctx, const Board *before_board) {
   tree_simple_free_except(&s->p, TP_NULL);
 
   resume_all_threads(s);
-  // printf("After undo pass... next_player = %d\n", s->board._next_player);
-  // printf("last4 = %d, last3 = %d, last2 = %d, last = %d\n", s->board._last_move4, s->board._last_move3, s->board._last_move2, s->board._last_move);
+  // fprintf(stderr,"After undo pass... next_player = %d\n", s->board._next_player);
+  // fprintf(stderr,"last4 = %d, last3 = %d, last2 = %d, last = %d\n", s->board._last_move4, s->board._last_move3, s->board._last_move2, s->board._last_move);
   return res;
 }
 
@@ -1732,9 +1732,9 @@ Move tree_search_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_b
   if (verify_board != NULL) {
     // If the two boards are not the same, error!
     if (!CompareBoard(&s->board, verify_board)) {
-      printf("Internal Board:\n");
+      fprintf(stderr,"Internal Board:\n");
       ShowBoard(&s->board, SHOW_ALL);
-      printf("External Board:\n");
+      fprintf(stderr,"External Board:\n");
       ShowBoard(verify_board, SHOW_ALL);
       error("The two boards are not the same!\n");
     }

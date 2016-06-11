@@ -38,7 +38,7 @@ local board_initialized = false
 -- print("Loading model = " .. opt.input)
 local model = torch.load(opt.input)
 
-print("CNNPlayerV2")
+io.stderr:write("CNNPlayerV2")
 
 -- Adhoc strategy, if they pass, we pass.
 local enemy_pass = false 
@@ -63,7 +63,7 @@ local commands = {
         return true
     end,
     komi = function(komi) 
-        print("The current algorithm has no awareness of komi. Nevertheless, it can still play the game.")
+        io.stderr:write("The current algorithm has no awareness of komi. Nevertheless, it can still play the game.")
         -- return board.set_komi(b) 
         return true
     end,
@@ -98,7 +98,7 @@ local commands = {
 
         local move
         if xf == nil then
-            print("Error! No move is valid!")
+            io.stderr:write("Error! No move is valid!")
             -- We just pass here.
             move = "pass"
             -- Play pass here.
@@ -106,10 +106,10 @@ local commands = {
         else
             move = goutils.compose_move_gtp(xf, yf)   
             -- Don't use any = signs.
-            print(string.format("idx: %d, x: %d, y: %d, movestr: %s", idx, xf, yf, move))
+            io.stderr:write(string.format("idx: %d, x: %d, y: %d, movestr: %s", idx, xf, yf, move))
             -- Actual play this move
             if not board.play(b, xf, yf, player) then
-                error("Illegal move from move_predictor! move = " .. move)
+                io.stderr:write("Illegal move from move_predictor! move = " .. move)
             end
         end
 

@@ -76,12 +76,12 @@ end
 function cnnplayer:time_left(color, num_seconds, num_moves)
     local thiscolor = (color:lower() == 'w' or color:lower() == 'white') and common.white or common.black
     if self.mycolor and thiscolor == self.mycolor and num_seconds and num_moves then
-        print(string.format("timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
+        io.stderr:write(string.format("timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
         if self.cbs.on_time_left then
             self.cbs.on_time_left(tonumber(num_seconds), tonumber(num_moves))
         end
     else
-        print(string.format("enemy timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
+        io.stderr:write(string.format("enemy timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
     end
 
     return true
@@ -115,7 +115,7 @@ function cnnplayer:save_sgf(filename)
     }
     f:write(sgfloader.sgf_string(header, self.sgf_history))
     f:close()
-    print("Sgf " .. filename .. " saved.")
+    io.stderr:write("Sgf " .. filename .. " saved.")
     return true
 end
 
@@ -134,8 +134,8 @@ function cnnplayer:show_board()
 end
 
 function cnnplayer:game_info()
-    print(string.format("Komi: %.1f, Handi: %.1f", self.val_komi, self.val_handi))
-    print(string.format("Move ply: %d", self.b._ply))
+    io.stderr:write(string.format("Komi: %.1f, Handi: %.1f", self.val_komi, self.val_handi))
+    io.stderr:write(string.format("Move ply: %d", self.b._ply))
     board.show_fancy(self.b, 'show_all')
     self:score(true)
     return true
@@ -161,10 +161,10 @@ function cnnplayer:default_policy(max_depth, verbose)
     local b2 = board.copyfrom(self.b)
     max_depth = tonumber(max_depth)
     local fast_score = self.dp.run(self.def_policy, b2, max_depth, verbose == "true")
-    print(string.format("Fast_score: %f", fast_score))
+    io.stderr:write(string.format("Fast_score: %f", fast_score))
     -- Incomplete default policy
     if max_depth > 0 then
-        print(string.format("Warning: since max_depth = %d, the score might not be accurate", max_depth))
+        io.stderr:write(string.format("Warning: since max_depth = %d, the score might not be accurate", max_depth))
     end
     board.show_fancy(b2, 'last_move')
     return true
@@ -193,7 +193,7 @@ end
 function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
     self:clear_board()
     -- Load the sgf file and play until till_move
-    print("Loading " .. filename)
+    io.stderr:write("Loading " .. filename)
     local content = io.open(filename):read("*a")
     if content == nil then 
         return false, "File " .. filename .. " cannot be loaded" 
@@ -223,17 +223,17 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
 
         -- require 'fb.debugger'.enter()
         if counter > self.val_handi then
-            print("Move: " .. move_str)
+            io.stderr:write("Move: " .. move_str)
             board.play(self.b, x, y, player)
             -- self:play(player_str, c, false)
         else
-            print("Handicap: " .. move_str)
+            io.stderr:write("Handicap: " .. move_str)
             board.place_handicap(self.b, x, y, player)
         end
         if move.C then
-            print("---------------------")
-            print(move.C)
-            print("---------------------")
+            io.stderr:write("---------------------")
+            io.stderr:write(move.C)
+            io.stderr:write("---------------------")
         end
         if self.cbs.get_value then
             self.cbs.get_value(self.b, player)
@@ -289,14 +289,14 @@ function cnnplayer:extract_win_rate(filename, run_from, run_to, save_to)
             end
             local print_str = string.format("[%d] Suggest: %s %s, Winrate: %f\nActual move: %s %s", 
                                             self.b._ply - 1, player_str, suggest_move, win_rate, player_str, c)
-            print(print_str)
+            io.stderr:write(print_str)
             f:write(print_str .. "\n")
             return true
         end
     end, tonumber(run_to), true)
 
     f:close()
-    print("All win rates computed and saved.")
+    io.stderr:write("All win rates computed and saved.")
     return true
 end
 
@@ -306,9 +306,9 @@ function cnnplayer:run_cmds(filename, run_to)
     for i, line in ipairs(lines) do
         if not line then break end
         if run_to and i > tonumber(run_to) then break end
-        print(line)
+        io.stderr:write(line)
         local ret, quit = self:getCommands(line, "io")
-        print(ret)
+        io.stderr:write(ret)
         io.flush()
         if quit then 
             return true, "", true 
@@ -417,7 +417,7 @@ function cnnplayer:attention(left_top, right_bottom)
         if x_left > x_right then x_left, x_right = x_right, x_left end
         if y_top > y_bottom then y_top, y_bottom = y_bottom, y_top end 
 
-        -- print(string.format("Attention = [%d, %d, %d, %d]", x_left, y_top, x_right, y_bottom))
+        -- io.stderr:write(string.format("Attention = [%d, %d, %d, %d]", x_left, y_top, x_right, y_bottom))
         self.cbs.set_attention(x_left, y_top, x_right, y_bottom)
         return true
     end
@@ -437,7 +437,7 @@ function cnnplayer:undo()
     end
     local x, y, player = self:undo_sgf_history()
     local move_str, player_str = goutils.compose_move_gtp(x, y, player)
-    print(string.format("undo move: %s %s, now ply: %d", player_str, move_str, self.b._ply)) 
+    io.stderr:write(string.format("undo move: %s %s, now ply: %d", player_str, move_str, self.b._ply)) 
     board.show_fancy(self.b, 'all_rows_cols')
     return true
 end
@@ -457,7 +457,7 @@ function cnnplayer:play(p, coord, show_board)
     -- Save the history.
     table.insert(self.board_history, board.copyfrom(self.b))
     if not board.play(self.b, x, y, player) then
-        print(string.format("Illegal move from the opponent! x = %d, y = %d, player = %d", x, y, player))
+        io.stderr:write(string.format("Illegal move from the opponent! x = %d, y = %d, player = %d", x, y, player))
         return false, "Invalid move"
     end
 
@@ -473,7 +473,7 @@ function cnnplayer:play(p, coord, show_board)
     if self.cbs.adjust_params_in_game then
         self.cbs.adjust_params_in_game(self.b)
     end
-    print("Time spent in play " .. self.b._ply .. " : " ..  common.wallclock() - t_start)
+    io.stderr:write("Time spent in play " .. self.b._ply .. " : " ..  common.wallclock() - t_start)
     self:add_to_sgf_history(x, y, player)
 
     return true
@@ -497,18 +497,18 @@ function cnnplayer:score(show_more)
     local max_score = scores:max()
     local stones = om.get_territorylist(territory)
  
-    print(string.format("Score (%s): %f, Playout min: %f, Playout max: %f, #dame: %d", self.opt.default_policy, score, min_score, max_score, #stones.dames));
+    io.stderr:write(string.format("Score (%s): %f, Playout min: %f, Playout max: %f, #dame: %d", self.opt.default_policy, score, min_score, max_score, #stones.dames));
     if show_more then
         -- Show the deadstone.
         local dead_stones = om.get_deadlist(livedead)
         local dead_stones_info = table.concat(dead_stones.b_str, " ") .. " " .. table.concat(dead_stones.w_str, " ")
-        print("Deadstones info:")
-        print(dead_stones_info)
+        io.stderr:write("Deadstones info:")
+        io.stderr:write(dead_stones_info)
         om.show_deadstones(self.b, livedead)
 
-        print("Black prob:")
+        io.stderr:write("Black prob:")
         om.show_stones_prob(self.ownermap, common.black)
-        print("White prob:")
+        io.stderr:write("White prob:")
         om.show_stones_prob(self.ownermap, common.white)
     end
 
@@ -576,7 +576,7 @@ function cnnplayer:genmove(player)
     local full_ply = math.floor((self.b._ply + 1) / 2)
     if full_ply > 70 and full_ply % 5 == 1 then
         -- Check every 5 rounds.
-        print("Check whether we have screwed up...")
+        io.stderr:write("Check whether we have screwed up...")
         local resign_thres = 10
         local _, _, _, scores = self:score()
         if (player == common.white and scores.min_score > resign_thres) or (player == common.black and scores.max_score < -resign_thres) then
@@ -591,15 +591,15 @@ function cnnplayer:genmove(player)
     end
  
     -- Call move predictor to get the move.
-    print("Start genmove. signature: " .. utils.get_signature())
+    io.stderr:write("Start genmove. signature: " .. utils.get_signature())
     local xf, yf, win_rate = self.cbs.move_predictor(self.b, player)
     if win_rate and win_rate < self.opt.win_rate_thres then
-        print(string.format("No hope, win_rate %f", win_rate))
+        io.stderr:write(string.format("No hope, win_rate %f", win_rate))
         return true, "resign"
     end
 
     if xf == nil then
-        print("Warning! No move is valid!")
+        io.stderr:write("Warning! No move is valid!")
         -- Play pass here.
         xf, yf = 0, 0
     end
@@ -607,7 +607,7 @@ function cnnplayer:genmove(player)
     local move = goutils.compose_move_gtp(xf, yf)
     -- Don't use any = signs.
     local win_rate_str = win_rate and string.format("%f", win_rate) or "unknown"
-    print(string.format("x: %d, y: %d, movestr: %s, win_rate: %s", xf, yf, move, win_rate_str))
+    io.stderr:write(string.format("x: %d, y: %d, movestr: %s, win_rate: %s", xf, yf, move, win_rate_str))
     -- Actual play this move
     if not board.play(self.b, xf, yf, player) then
         error("Illegal move from move_predictor! move: " .. move)
@@ -615,7 +615,7 @@ function cnnplayer:genmove(player)
 
     -- Show the current board 
     board.show_fancy(self.b, 'all_rows_cols')
-    print("Time spent in genmove " .. self.b._ply .. " : " ..  common.wallclock() - t_start)
+    io.stderr:write("Time spent in genmove " .. self.b._ply .. " : " ..  common.wallclock() - t_start)
     self:add_to_sgf_history(xf, yf, player)
     
     -- Tell the GTP server we have chosen this move
@@ -652,12 +652,12 @@ function cnnplayer:final_status_list(subcommand)
     if subcommand == 'dead' then
         -- Report dead stones.
         -- require 'fb.debugger'.enter()
-        -- print("compute final score!")
+        -- io.stderr:write("compute final score!")
         local res, _, _, stats = self:score()
-        -- print("get deadlist")
+        -- io.stderr:write("get deadlist")
         local stones = om.get_deadlist(stats.livedead)
 
-        -- print("Return the string")
+        -- io.stderr:write("Return the string")
         -- Return the string for the deadstones. 
         local s = table.concat(stones.b_str, " ") .. " " .. table.concat(stones.w_str, " ")
         return true, s 
@@ -802,7 +802,7 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
         self.def_policy = self.dp.new(rule)
     end
 
-    print(splash)
+    io.stderr:write(splash)
 
     if self.opt.setup_board and self.opt.setup_board ~= "" then
         local items = pl.stringx.split(self.opt.setup_board)
