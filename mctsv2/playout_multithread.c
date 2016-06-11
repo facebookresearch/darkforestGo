@@ -150,35 +150,35 @@ void ts_v2_init_params(SearchParamsV2 *params) {
 
 void ts_v2_print_params(void *ctx) {
   if (ctx == NULL) {
-    printf("Cannot print search params since ctx is NULL\n");
+    fprintf(stderr,"Cannot print search params since ctx is NULL\n");
     return;
   }
   SearchHandle *s = (SearchHandle *)ctx;
   const SearchParamsV2 *params = &s->params;
 
   // Print all search parameters.
-  printf(" ------------ Parameters for Search -----------------\n");
+  fprintf(stderr," ------------ Parameters for Search -----------------\n");
   if (params->server_type == SERVER_LOCAL) {
-    printf("Local Pipe path: %s\n", params->pipe_path);
+    fprintf(stderr,"Local Pipe path: %s\n", params->pipe_path);
   } else {
-    printf("Server: %s\n", params->tier_name);
+    fprintf(stderr,"Server: %s\n", params->tier_name);
   }
-  printf("Verbose: %d\n", params->verbose);
-  printf("PrintSearchTree: %s\n", STR_BOOL(params->print_search_tree));
-  printf("#GPU: %d\n", params->num_gpu);
-  printf("#Use CPU rollout only: %s\n", STR_BOOL(params->cpu_only));
-  printf("Komi: %.1f\n", params->komi);
-  printf("dynkomi_factor: %.2f\n", params->dynkomi_factor);
-  printf("Rule: %s\n", params->rule == RULE_CHINESE ? "chinese" : "japanese");
-  printf("Use heuristic time management: %d, max_time_spent: %lf, min_time_spent: %lf\n",
+  fprintf(stderr,"Verbose: %d\n", params->verbose);
+  fprintf(stderr,"PrintSearchTree: %s\n", STR_BOOL(params->print_search_tree));
+  fprintf(stderr,"#GPU: %d\n", params->num_gpu);
+  fprintf(stderr,"#Use CPU rollout only: %s\n", STR_BOOL(params->cpu_only));
+  fprintf(stderr,"Komi: %.1f\n", params->komi);
+  fprintf(stderr,"dynkomi_factor: %.2f\n", params->dynkomi_factor);
+  fprintf(stderr,"Rule: %s\n", params->rule == RULE_CHINESE ? "chinese" : "japanese");
+  fprintf(stderr,"Use heuristic time management: %d, max_time_spent: %lf, min_time_spent: %lf\n",
       params->heuristic_tm_total_time, params->max_time_spent, params->min_time_spent);
   // Print the parameters of all the search trees.
   for (int i = 0; i < s->num_trees; ++i) {
-    printf("+++++++++++ Tree #%d ++++++++++++\n", i);
+    fprintf(stderr,"+++++++++++ Tree #%d ++++++++++++\n", i);
     tree_search_print_params(s->trees[i]);
-    printf("+++++++++++ End Tree ++++++++++++\n");
+    fprintf(stderr,"+++++++++++ End Tree ++++++++++++\n");
   }
-  printf(" --------- End parameters for Search --------------\n");
+  fprintf(stderr," --------- End parameters for Search --------------\n");
 }
 
 void ts_v2_thread_off(void *ctx) {
@@ -202,15 +202,15 @@ void ts_v2_thread_on(void *ctx) {
 void* ts_v2_init(const SearchParamsV2 *params, const TreeParams *tree_params, const Board* init_board) {
   SearchHandle *s = (SearchHandle *)malloc(sizeof(SearchHandle));
   if (s == NULL) {
-    printf("Initialize SearchHandle failed!");
+    fprintf(stderr,"Initialize SearchHandle failed!");
     error("");
   }
   if (tree_params == NULL) {
-    printf("TreeParams cannot be NULL");
+    fprintf(stderr,"TreeParams cannot be NULL");
     error("");
   }
   if (params == NULL) {
-    printf("SearchParams cannot be NULL");
+    fprintf(stderr,"SearchParams cannot be NULL");
     error("");
   }
 
@@ -316,7 +316,7 @@ void ts_v2_add_move_history(void *ctx, Coord m, Stone player, BOOL actual_play) 
     if (! TryPlay2(&s->board, m, &ids)) {
       char buf[100];
       ShowBoard(&s->board, SHOW_LAST_MOVE);
-      printf("Move: %s", get_move_str(m, player, buf));
+      fprintf(stderr,"Move: %s", get_move_str(m, player, buf));
       error("add_move_history: the move is not valid!");
     }
     // Play it.
@@ -366,9 +366,9 @@ Move ts_v2_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) 
   if (verify_board != NULL) {
     // If the two boards are not the same, error!
     if (!CompareBoard(&s->board, verify_board)) {
-      printf("[ts_v2_pick_best]: Internal Board:\n");
+      fprintf(stderr,"[ts_v2_pick_best]: Internal Board:\n");
       ShowBoard(&s->board, SHOW_ALL);
-      printf("[ts_v2_pick_best]: External Board:\n");
+      fprintf(stderr,"[ts_v2_pick_best]: External Board:\n");
       ShowBoard(verify_board, SHOW_ALL);
       error("The two boards are not the same!\n");
     }
@@ -381,7 +381,7 @@ Move ts_v2_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) 
   endtime2(t)
 
   char buf[100];
-  printf("[ts_v2_pick_best] Ply: %d, Time elapsed: %lf, move = %s, win_rate = %f [%.2f/%d]\n",
+  fprintf(stderr,"[ts_v2_pick_best] Ply: %d, Time elapsed: %lf, move = %s, win_rate = %f [%.2f/%d]\n",
       s->board._ply, t, get_move_str(move.m, player, buf), move.win_rate, move.win_games, move.total_games);
 
   // Change dynkomi if we are winning or losing too much.
@@ -405,14 +405,14 @@ Move ts_v2_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) 
   // Print tree.
   // Show the picked move as comments so that we could analyze it.
   if (s->params.print_search_tree) {
-    printf("Best move: %s\n", get_move_str(move.m, player, buf));
-    printf("COMMENT\n");
+    fprintf(stderr,"Best move: %s\n", get_move_str(move.m, player, buf));
+    fprintf(stderr,"COMMENT\n");
     // print the address b and seq number.
-    printf("Ply: %d, dynkomi: %f\n", s->board._ply, s->variants.dynkomi);
+    fprintf(stderr,"Ply: %d, dynkomi: %f\n", s->board._ply, s->variants.dynkomi);
     for (int i = 0; i < s->num_trees; ++i) {
       tree_search_print_tree(s->trees[i]);
     }
-    printf("ENDCOMMENT\n");
+    fprintf(stderr,"ENDCOMMENT\n");
   }
 
   return move;
@@ -466,7 +466,7 @@ void ts_v2_tree_to_json(void *ctx, const char *jsonfile_prefix) {
     sprintf(filename, "%s-%d.json", jsonfile_prefix, i);
     tree_search_to_json(s->trees[i], s->prev_moves, s->num_prev_moves, filename);
     endtime2(t)
-    printf("Save %s. Time elapsed: %lf\n", filename, t);
+    fprintf(stderr,"Save %s. Time elapsed: %lf\n", filename, t);
   }
 }
 
@@ -481,7 +481,7 @@ void ts_v2_tree_to_feature(void *ctx, const char *feature_prefix) {
     sprintf(filename, "%s-%d.txt", feature_prefix, i);
     tree_search_to_feature(s->trees[i], filename);
     endtime2(t)
-    printf("Save %s. Time elapsed: %lf\n", filename, t);
+    fprintf(stderr,"Save %s. Time elapsed: %lf\n", filename, t);
   }
 }
 

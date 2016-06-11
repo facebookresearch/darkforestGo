@@ -115,7 +115,7 @@ if opt.use_formal_params then
     load_params_for_formal_game()
 end
 
--- print("Loading model = " .. opt.input)
+-- io.stderr:write("Loading model = " .. opt.input)
 local function set_playout_params_from_opt()
     playoutv2.params.print_search_tree = opt.print_tree and common.TRUE or common.FALSE
     playoutv2.params.pipe_path = opt.pipe_path
@@ -252,7 +252,7 @@ function callbacks.new_game()
     end
     count = 0
     signature = utils.get_signature() 
-    print("New MCTS game, signature: " .. signature)
+    io.stderr:write("New MCTS game, signature: " .. signature)
     os.execute("mkdir -p " .. paths.concat(opt.pipe_path, signature))
     playoutv2.print_params(tr)
 end
@@ -266,7 +266,7 @@ end
 function callbacks.move_predictor(b, player)
     local prefix = prepare_prefix()
     local m = playoutv2.play_rollout(tr, prefix, b)
-    if prefix then print("Save tree to " .. prefix) end
+    if prefix then io.stderr:write("Save tree to " .. prefix) end
     return m.x + 1, m.y + 1, m.win_rate
 end
 
@@ -293,7 +293,7 @@ function callbacks.thread_switch(arg)
     elseif arg == 'off' then
         playoutv2.thread_off(tr)
     else 
-        print("Command " .. arg .. " is not recognized!")
+        io.stderr:write("Command " .. arg .. " is not recognized!")
     end
 end
 

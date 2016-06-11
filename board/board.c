@@ -1236,7 +1236,7 @@ void ShowBoard(const Board *board, ShowChoice choice) {
     len += sprintf(buf + len, "\n   Ko point = %s [Age = %d]", get_move_str(board->_simple_ko, board->_simple_ko_color, buf2), board->_ko_age);
   }
   // Finally print
-  printf(buf);
+  fprintf(stderr,buf);
 }
 
 static int add_title(char *buf) {
@@ -1347,15 +1347,15 @@ void ShowBoardFancy(const Board *board, ShowChoice choice) {
     len += sprintf(buf + len, "\n   Ko point = %s [Age = %d]", get_move_str(board->_simple_ko, board->_simple_ko_color, buf2), board->_ko_age);
   }
   // Finally print
-  printf(buf);
+  fprintf(stderr, buf);
 }
 
 // Debugging
 void DumpBoard(const Board *board) {
   char buf[30];
-  printf("Last move = %s\n", get_move_str(board->_last_move, OPPONENT(board->_next_player), buf));
-  printf("Last move2 = %s\n", get_move_str(board->_last_move2, board->_next_player, buf));
-  printf("----Expanded board------------\n");
+  fprintf(stderr,"Last move = %s\n", get_move_str(board->_last_move, OPPONENT(board->_next_player), buf));
+  fprintf(stderr,"Last move2 = %s\n", get_move_str(board->_last_move2, board->_next_player, buf));
+  fprintf(stderr,"----Expanded board------------\n");
   ALL_EXPAND_BOARD(board) {
       Stone s = board->_infos[c].color;
       if (s == S_BLACK) printf("X ");
@@ -1365,7 +1365,7 @@ void DumpBoard(const Board *board) {
   } END_ALL_EXPAND_BOARD
 
   // Simple function to show board.
-  printf("----Group ids------------\n");
+  fprintf(stderr,"----Group ids------------\n");
   ALLBOARD(board) {
       const Info* info = &board->_infos[c];
       if (board->_infos[c].color != S_EMPTY) {
@@ -1375,13 +1375,13 @@ void DumpBoard(const Board *board) {
       }
   } ENDALLBOARD
 
-  printf("------Group contents (#groups = %d)-------------\n", board->_num_groups - 1);
+  fprintf(stderr,"------Group contents (#groups = %d)-------------\n", board->_num_groups - 1);
   for (int i = 1; i < board->_num_groups; ++i) {
     const Group* g = &board->_groups[i];
-    printf("#%d: color = %d, start = (%d, %d), liberty = %d, stones = %d\n", i, g->color, X(g->start), Y(g->start), g->liberties, g->stones);
+    fprintf(stderr,"#%d: color = %d, start = (%d, %d), liberty = %d, stones = %d\n", i, g->color, X(g->start), Y(g->start), g->liberties, g->stones);
     TRAVERSE(board, i, c) {
        const Info* info = &board->_infos[c];
-       printf("  id = %d, color = %d, coord = (%d, %d), next = (%d, %d)\n", info->id, board->_infos[c].color, X(c), Y(c), X(info->next), Y(info->next));
+       fprintf(stderr,"  id = %d, color = %d, coord = (%d, %d), next = (%d, %d)\n", info->id, board->_infos[c].color, X(c), Y(c), X(info->next), Y(info->next));
     } ENDTRAVERSE
   }
 }
@@ -1804,5 +1804,5 @@ char *get_move_str(Coord m, Stone player, char *buf) {
 }
 
 void util_show_move(Coord m, Stone player, char *buf) {
-  printf("Move: x = %d, y = %d, m = %d, str = %s\n", X(m), Y(m), m, get_move_str(m, player, buf));
+  fprintf(stderr,"Move: x = %d, y = %d, m = %d, str = %s\n", X(m), Y(m), m, get_move_str(m, player, buf));
 }

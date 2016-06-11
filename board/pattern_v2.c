@@ -21,8 +21,8 @@
 
 // #define EXP(a) (1 + a)
 
-#define PRINT_INFO(h, ...) do { if (h->params.verbose >= PV_INFO) { printf(__VA_ARGS__); fflush(stdout); } } while(0)
-#define PRINT_DEBUG(h, ...) do { if (h->params.verbose >= PV_DEBUG) { printf(__VA_ARGS__); fflush(stdout); } } while(0)
+#define PRINT_INFO(h, ...) do { if (h->params.verbose >= PV_INFO) { fprintf(stderr,__VA_ARGS__); fflush(stdout); } } while(0)
+#define PRINT_DEBUG(h, ...) do { if (h->params.verbose >= PV_DEBUG) { fprintf(stderr,__VA_ARGS__); fflush(stdout); } } while(0)
 
 const double g_beta = 0.67;
 // #define EXP(a) exp(((a) * g_beta))
@@ -137,7 +137,7 @@ static inline int RepCheckListAdd(RepCheckList *l, unsigned int key) {
   if (l->keys_map[key] >= 0) return KEY_EXISTS;
   if (l->n == l->ub_num_key) return KEY_FULL;
 
-  // printf("Add key [%u] at %d\n", key, l->n);
+  // fprintf(stderr,"Add key [%u] at %d\n", key, l->n);
 
   l->keys_map[key] = l->n;
   l->keys[l->n ++] = key;
@@ -150,13 +150,13 @@ static inline int RepCheckListRemove(RepCheckList *l, unsigned int key) {
   if (l->n == 0) return KEY_EMPTY;
 
   int idx = l->keys_map[key];
-  // printf("Delete key [%u] at %d\n", key, idx);
+  // fprintf(stderr,"Delete key [%u] at %d\n", key, idx);
   l->keys_map[key] = -1;
   l->n --;
   // Swap the deleted key with the last element.
   if (idx < l->n) {
     int k2 = l->keys[l->n];
-    // printf("Replace slot %d with key %d at %d/%d\n", idx, k2, l->n, l->n + 1);
+    // fprintf(stderr,"Replace slot %d with key %d at %d/%d\n", idx, k2, l->n, l->n + 1);
     l->keys_map[k2] = idx;
     l->keys[idx] = k2;
   }
@@ -168,18 +168,18 @@ static inline unsigned int RepCheckListEnumerate(const RepCheckList *l, int i) {
 
 static inline BOOL RepCheckListCheck(const RepCheckList *l) {
   if (l->n < 0 || l->n >= l->ub_num_key) {
-    printf("l->n [%d] is out of bound [%d]\n", l->n, l->ub_num_key);
+    fprintf(stderr,"l->n [%d] is out of bound [%d]\n", l->n, l->ub_num_key);
     return FALSE;
   }
   for (int i = 0; i < l->n; ++i) {
     unsigned int key = l->keys[i];
-    // printf("key: %d\n", key);
+    // fprintf(stderr,"key: %d\n", key);
     if (key >= l->ub_key) {
-      printf("key [%d] at %d/%d is not valid [ub_key = %d]\n", key, i, l->n, l->ub_key);
+      fprintf(stderr,"key [%d] at %d/%d is not valid [ub_key = %d]\n", key, i, l->n, l->ub_key);
       return FALSE;
     }
     if (l->keys_map[key] != i) {
-      printf("key [%d] at %d/%d is not consistent with key map, whose loc is [%d]\n", key, i, l->n, l->keys_map[key]);
+      fprintf(stderr,"key [%d] at %d/%d is not consistent with key map, whose loc is [%d]\n", key, i, l->n, l->keys_map[key]);
       return FALSE;
     }
   }
@@ -187,11 +187,11 @@ static inline BOOL RepCheckListCheck(const RepCheckList *l) {
     int idx = l->keys_map[i];
     if (idx == -1) continue;
     if (idx >= l->n) {
-      printf("The key map at %d is %d, out of bound [l->n = %d]\n", i, idx, l->n);
+      fprintf(stderr,"The key map at %d is %d, out of bound [l->n = %d]\n", i, idx, l->n);
       return FALSE;
     }
     if (l->keys[idx] != i) {
-      printf("key_map [%d] at %d/%d is not consistent with keys at %d, whose key is %d\n", idx, i, l->ub_key, idx, l->keys[idx]);
+      fprintf(stderr,"key_map [%d] at %d/%d is not consistent with keys at %d, whose key is %d\n", idx, i, l->ub_key, idx, l->keys[idx]);
       return FALSE;
     }
   }
@@ -511,24 +511,24 @@ static void heap_dump_one(const BoardExtra *h, int heap_idx, const char *prefix)
 
   if (prefix == NULL) prefix = "";
 
-  printf("%s Move %s at %d/%d: logprob: %lf, prior: %lf, raw-prob: %lf, total_prob: %lf, prob: %lf",
+  fprintf(stderr,"%s Move %s at %d/%d: logprob: %lf, prior: %lf, raw-prob: %lf, total_prob: %lf, prob: %lf",
       prefix, move_str, heap_idx, h->heap_size, mv->logprob, mv->prior, mv->prob, h->total_prob, mv->prob / h->total_prob);
   if (heap_idx != mv->heap_idx) {
-    printf(", heap_idx from moves: %d", mv->heap_idx);
+    fprintf(stderr,", heap_idx from moves: %d", mv->heap_idx);
   }
-  printf("\n");
+  fprintf(stderr,"\n");
 }
 
 static void heap_dump(const BoardExtra *h, int heap_size) {
   if (heap_size == -1) heap_size = h->heap_size;
   else if (heap_size > h->heap_size) heap_size = h->heap_size;
   char buf[30];
-  printf("--- HeapDump:\n");
-  printf("heap_size: %d\n", h->heap_size);
+  fprintf(stderr,"--- HeapDump:\n");
+  fprintf(stderr,"heap_size: %d\n", h->heap_size);
   for (int i = 1; i < heap_size; ++i) {
     heap_dump_one(h, i, NULL);
   }
-  printf("--- End HeapDump\n");
+  fprintf(stderr,"--- End HeapDump\n");
 }
 
 #define HEAP_DUMP(prefix, h, heap_idx) do { if (h->h->params.verbose >= PV_DEBUG) { heap_dump_one(h, heap_idx, prefix); fflush(stdout); } } while(0)
@@ -546,14 +546,14 @@ static inline void heap_swap(BoardExtra *h, int heap_idx1, int heap_idx2) {
 /*
 static void heap_dump_moves(const BoardExtra *h) {
   char buf[20];
-  printf("Heap Moves: \n");
+  fprintf(stderr,"Heap Moves: \n");
   for (int i = 1; i < h->heap_size; ++i) {
     int idx = h->moves_heap[i];
     const char *mv_str = get_move_str(h->moves[idx], S_EMPTY, buf);
-    printf(mv_str);
-    if (i % 20 == 0) printf("\n");
+    fprintf(stderr,mv_str);
+    if (i % 20 == 0) fprintf(stderr,"\n");
   }
-  printf("\n");
+  fprintf(stderr,"\n");
 }
 */
 
@@ -567,7 +567,7 @@ BOOL heap_check(const BoardExtra *h) {
      double child1 = (2*i < h->heap_size) ? HEAP_PROB(h, 2*i) : 0.0;
      double child2 = (2*i + 1 < h->heap_size) ? HEAP_PROB(h, 2*i + 1) : 0.0;
      if (curr_prob < child1 || curr_prob < child2) {
-       printf("Heap invalid! curr [%d/%lf] is smaller than child1 [%d/%lf] or child2 [%d/%lf]\n", i, curr_prob, 2*i, child1, 2*i+1, child2);
+       fprintf(stderr,"Heap invalid! curr [%d/%lf] is smaller than child1 [%d/%lf] or child2 [%d/%lf]\n", i, curr_prob, 2*i, child1, 2*i+1, child2);
        heap_dump(h, -1);
        ShowBoard(&h->board, SHOW_ALL);
        return FALSE;
@@ -605,11 +605,11 @@ int heap_down(BoardExtra *h, int heap_idx, int heap_size) {
 
     if (parent_prob >= c1 && parent_prob >= c2) break;
     else if (parent_prob <= c2 && c1 <= c2) {
-      // printf("heap_size = %d, parent_prob = %lf[%d], c1 = %lf[%d], c2 = %lf[%d], pick c2\n", heap_size, parent_prob, heap_idx, c1, child1, c2, child2);
+      // fprintf(stderr,"heap_size = %d, parent_prob = %lf[%d], c1 = %lf[%d], c2 = %lf[%d], pick c2\n", heap_size, parent_prob, heap_idx, c1, child1, c2, child2);
       heap_swap(h, heap_idx, child2);
       heap_idx = child2;
     } else {
-      // printf("heap_size = %d, parent_prob = %lf[%d], c1 = %lf[%d], c2 = %lf[%d], pick c1\n", heap_size, parent_prob, heap_idx, c1, child1, c2, child2);
+      // fprintf(stderr,"heap_size = %d, parent_prob = %lf[%d], c1 = %lf[%d], c2 = %lf[%d], pick c1\n", heap_size, parent_prob, heap_idx, c1, child1, c2, child2);
       heap_swap(h, heap_idx, child1);
       heap_idx = child1;
     }
@@ -620,7 +620,7 @@ int heap_down(BoardExtra *h, int heap_idx, int heap_size) {
 
 BOOL heap_check_neg_total_prob(const BoardExtra *h, const PatternMove *mv) {
   if (h->total_prob < -0.1) {
-    printf("Total prob cannot be negative! total_prob = %lf, mv->prob = %lf\n", h->total_prob, mv->prob);
+    fprintf(stderr,"Total prob cannot be negative! total_prob = %lf, mv->prob = %lf\n", h->total_prob, mv->prob);
     heap_dump_one(h, mv->heap_idx, "check_neg_total_prob");
     heap_dump(h, -1);
     return FALSE;
@@ -634,17 +634,17 @@ void heap_delete(BoardExtra *h, PatternMove *mv) {
   // heap_dump_moves(h);
 
   if (heap_idx < 1 || heap_idx >= h->heap_size) {
-    printf("Delete index cannot be %d/%d!\n", heap_idx, h->heap_size);
+    fprintf(stderr,"Delete index cannot be %d/%d!\n", heap_idx, h->heap_size);
     ShowBoard(&h->board, SHOW_LAST_MOVE);
     error("");
   }
 
-  // printf("Heap delete! heap_idx: %d/%d\n", heap_idx, h->heap_size);
+  // fprintf(stderr,"Heap delete! heap_idx: %d/%d\n", heap_idx, h->heap_size);
   // Substracted from the influence.
   h->total_prob -= mv->prob;
   /*
   if (! heap_check_neg_total_prob(h, mv)) {
-    printf("In heap delete.\n");
+    fprintf(stderr,"In heap delete.\n");
     error("");
   }*/
 
@@ -670,7 +670,7 @@ void heap_delete(BoardExtra *h, PatternMove *mv) {
   /*
   if (h->h->params.verbose >= PV_DEBUG) {
     if (! PatternV2BoardExtraCheck(h)) error("");
-    else printf("heap_delete: All checks pass!\n");
+    else fprintf(stderr,"heap_delete: All checks pass!\n");
   }
   */
 }
@@ -682,13 +682,13 @@ void heap_add(BoardExtra *h, Coord c, double logprob) {
   if (h->h->params.verbose >= PV_DEBUG) {
     char buf[20];
     const char *mv_str = get_move_str(c, h->board._next_player, buf);
-    printf("Add move %s! heap_size: %d, logprob: %lf, prob: %lf, total_prob: %lf\n", mv_str, h->heap_size, logprob, EXP(logprob / h->h->T), h->total_prob);
+    fprintf(stderr,"Add move %s! heap_size: %d, logprob: %lf, prob: %lf, total_prob: %lf\n", mv_str, h->heap_size, logprob, EXP(logprob / h->h->T), h->total_prob);
   }
   // heap_dump_moves(h);
 
   if (h->heap_size == sizeof(h->moves_heap) / sizeof(Coord)) {
     // heap full, error. Dump the entire heap.
-    printf("Heap full!!\n");
+    fprintf(stderr,"Heap full!!\n");
     heap_dump(h, -1);
     error("");
   }
@@ -697,7 +697,7 @@ void heap_add(BoardExtra *h, Coord c, double logprob) {
   if (move->heap_idx > 0) {
     char buf[20];
     const char *mv_str = get_move_str(c, h->board._next_player, buf);
-    printf("The move %s, is already added at heap_idx %d\n", mv_str, move->heap_idx);
+    fprintf(stderr,"The move %s, is already added at heap_idx %d\n", mv_str, move->heap_idx);
     error("");
   }
   memset(move, 0, sizeof(PatternMove));
@@ -717,7 +717,7 @@ void heap_add(BoardExtra *h, Coord c, double logprob) {
   /*
   if (h->h->params.verbose >= PV_DEBUG) {
     if (! PatternV2BoardExtraCheck(h)) error("");
-    else printf("heap_add: All checks pass!\n");
+    else fprintf(stderr,"heap_add: All checks pass!\n");
   }
   */
 }
@@ -734,7 +734,7 @@ void heap_recompute_prob(BoardExtra *h, PatternMove *move) {
 
    /*
    if (! heap_check_neg_total_prob(h, move)) {
-     printf("oldprob: %lf, newprob: %lf\n", old_prob, new_prob);
+     fprintf(stderr,"oldprob: %lf, newprob: %lf\n", old_prob, new_prob);
      error("");
    }
    */
@@ -796,7 +796,7 @@ static void show_hash_log_prob(const BoardExtra *h, Coord c) {
   double pos_logprob = h->h->pos_w[c];
   double move_logprob = h->board._ply * h->h->prior_w[h->h->prior_offset[T_PLY_POS_W]] * PLY_FRACTION;
   char buf[30];
-  printf("HashLog: Move: %s, hash: %lx, idx: %lx, cnt: %d [%s], logprob: %lf, pos_logprob: %lf, move_logprob: %lf\n",
+  fprintf(stderr,"HashLog: Move: %s, hash: %lx, idx: %lx, cnt: %d [%s], logprob: %lf, pos_logprob: %lf, move_logprob: %lf\n",
       get_move_str(c, S_EMPTY, buf), hash, v, cnt, (cnt_passed ? "passed" : "not passed"), logprob, pos_logprob, move_logprob);
 }
 
@@ -817,7 +817,7 @@ void heap_update(BoardExtra *h, Coord c) {
 
   if (h->h->params.verbose >= PV_DEBUG) {
     char buf[20];
-    printf("heap_update: Move: %s, logprob: %lf, cnt_passed: %s, idx: %d/%d\n",
+    fprintf(stderr,"heap_update: Move: %s, logprob: %lf, cnt_passed: %s, idx: %d/%d\n",
         get_move_str(c, h->board._next_player, buf), logprob, (cnt_passed ? "true" : "false"), move->heap_idx, h->heap_size);
     show_hash_log_prob(h, c);
   }
@@ -833,14 +833,14 @@ void heap_update(BoardExtra *h, Coord c) {
     }
   } else if (cnt_passed && move->heap_idx == 0) {
     // New move, add to heap.
-    // printf("Update move %s! heap_size: %d, influence: %lf\n", get_move_str(c, h->board._next_player, buf), h->heap_size, logprob);
+    // fprintf(stderr,"Update move %s! heap_size: %d, influence: %lf\n", get_move_str(c, h->board._next_player, buf), h->heap_size, logprob);
     heap_add(h, c, logprob);
   }
 }
 
 inline static double get_prior(const Handle *h, int w_type, int w_offset) {
   if (w_type < 0 || w_type >= WT_TOTAL) {
-    printf("w_type [%d] is out of bound [%d]\n", w_type, WT_TOTAL);
+    fprintf(stderr,"w_type [%d] is out of bound [%d]\n", w_type, WT_TOTAL);
     error("");
   }
   return h->weights[w_type][w_offset];
@@ -848,12 +848,12 @@ inline static double get_prior(const Handle *h, int w_type, int w_offset) {
 
 inline static void add_gradient(HandleGradient *grads, int w_type, int w_offset, double delta) {
   if (w_type < 0 || w_type >= WT_TOTAL) {
-    printf("w_type [%d] is out of bound [%d]\n", w_type, WT_TOTAL);
+    fprintf(stderr,"w_type [%d] is out of bound [%d]\n", w_type, WT_TOTAL);
     error("");
   }
 
   if (RepCheckListAdd(grads->checks[w_type], w_offset) == KEY_OOB) {
-    printf("Key %d is out of bound!\n", w_offset);
+    fprintf(stderr,"Key %d is out of bound!\n", w_offset);
     error("");
   }
   // Record that the gradient of w_type at w_offset has been changed.
@@ -870,7 +870,7 @@ BOOL heap_add_prior(BoardExtra *h, Coord c, int w_type, int w_offset, BOOL creat
 
   if (h->h->params.verbose >= PV_DEBUG) {
     char buf[30];
-    printf("Change prior for %s! heap_size: %d, prior: %lf, create_new: %s\n",
+    fprintf(stderr,"Change prior for %s! heap_size: %d, prior: %lf, create_new: %s\n",
         get_move_str(c, h->board._next_player, buf), h->heap_size, prior, (create_new ? "true" : "false"));
   }
 
@@ -944,7 +944,7 @@ void *InitPatternV2(const char *pattern_file, const PatternV2Params *params, BOO
     h->params = *params;
   }
   else {
-    printf("Params is NULL, set default parameters.\n");
+    fprintf(stderr,"Params is NULL, set default parameters.\n");
     PatternV2DefaultParams(&h->params);
   }
 
@@ -987,7 +987,7 @@ void *InitPatternV2(const char *pattern_file, const PatternV2Params *params, BOO
 
     h->num_pattern = 0;
   } else {
-    printf("Pattern file %s loaded!\n", pattern_file);
+    fprintf(stderr,"Pattern file %s loaded!\n", pattern_file);
   }
   return h;
 }
@@ -1050,17 +1050,17 @@ static uint64_t get_12d_hash(const BoardExtra *board_extra, Coord c) {
 
   /*
   char buf[30];
-  printf("Get12dhash at %s\n", get_move_str(c, S_EMPTY, buf));
+  fprintf(stderr,"Get12dhash at %s\n", get_move_str(c, S_EMPTY, buf));
   */
 
   uint64_t v = 0;
   D12(c, idx, cc, +) {
     int local_idx = get_hash_local_index(b, cc);
-    // printf("idx = %d, local_idx = %d, hash = %lx\n", idx, local_idx, h->hs[idx][local_idx]);
+    // fprintf(stderr,"idx = %d, local_idx = %d, hash = %lx\n", idx, local_idx, h->hs[idx][local_idx]);
     v ^= h->hs[idx][local_idx];
   } ENDD12
 
-  // printf("Get12dhash, final hash %lx\n", v);
+  // fprintf(stderr,"Get12dhash, final hash %lx\n", v);
   return v;
 }
 
@@ -1127,11 +1127,11 @@ void PatternV2DestroyBoardExtra(void *board_extra) {
 
 void PatternV2BoardExtraPrintStats(void *board_extra) {
   BoardExtra *be = (BoardExtra *)board_extra;
-  printf("---- Board Extra -----\n");
-  printf("#heap_size: %d, #empty: %d\n", be->heap_size, be->empty_list->n);
+  fprintf(stderr,"---- Board Extra -----\n");
+  fprintf(stderr,"#heap_size: %d, #empty: %d\n", be->heap_size, be->empty_list->n);
   ShowBoard(&be->board, SHOW_LAST_MOVE);
-  printf("Total prob: %lf\n", be->total_prob);
-  printf("-- End Board Extra ---\n");
+  fprintf(stderr,"Total prob: %lf\n", be->total_prob);
+  fprintf(stderr,"-- End Board Extra ---\n");
 }
 
 void PatternV2RecomputeZ(void *be2) {
@@ -1187,7 +1187,7 @@ BOOL PatternV2BoardExtraCheck(void *board_extra) {
       if (be->hashes[c] != recomputed) {
         ShowBoard(b, SHOW_LAST_MOVE);
         // Something wrong.
-        printf("At %s: recomputed hash [%lx] is different from stored one [%lx]\n",
+        fprintf(stderr,"At %s: recomputed hash [%lx] is different from stored one [%lx]\n",
             get_move_str(c, S_EMPTY, buf), recomputed, be->hashes[c]);
         return FALSE;
       }
@@ -1195,7 +1195,7 @@ BOOL PatternV2BoardExtraCheck(void *board_extra) {
   }
 
   if (be->heap_size < 1 || be->heap_size > BOARD_SIZE * BOARD_SIZE + 1) {
-    printf("Invalid heap size: %d\n", be->heap_size);
+    fprintf(stderr,"Invalid heap size: %d\n", be->heap_size);
     return FALSE;
   }
 
@@ -1230,24 +1230,24 @@ BOOL PatternV2BoardExtraCheck(void *board_extra) {
     const char *move_str = get_move_str(m, b->_next_player, buf);
 
     if (m == M_PASS || m == M_RESIGN) {
-      printf("Move at heap_idx %d in heap cannot be %s!\n", i, move_str);
+      fprintf(stderr,"Move at heap_idx %d in heap cannot be %s!\n", i, move_str);
       heap_dump((const BoardExtra *)board_extra, -1);
       return FALSE;
     }
     if (mv->heap_idx != i) {
       Coord m2 = be->moves_heap[mv->heap_idx];
       const PatternMove *mv2 = &be->moves[m2];
-      printf("Move %s in idx %d/%d, ", move_str, i, be->heap_size);
-      printf("but mv->heap_idx = %d", mv->heap_idx);
+      fprintf(stderr,"Move %s in idx %d/%d, ", move_str, i, be->heap_size);
+      fprintf(stderr,"but mv->heap_idx = %d", mv->heap_idx);
       if (mv->heap_idx > 0) {
-        printf(", whose move is %s\n", get_move_str(m2, b->_next_player, buf));
+        fprintf(stderr,", whose move is %s\n", get_move_str(m2, b->_next_player, buf));
       }
       return FALSE;
     }
     // Make it count.
     // If negative count, then
     if (move_loc2[m] < 0) {
-      printf("The same move [%s] was encoded more than two times. One in heap_idx %d/%d, the previous one is heap_idx %d/%d\n",
+      fprintf(stderr,"The same move [%s] was encoded more than two times. One in heap_idx %d/%d, the previous one is heap_idx %d/%d\n",
           move_str, i, be->heap_size, -move_loc2[m], be->heap_size);
     } else {
       // Meet the encoding of this move for the first time.
@@ -1257,14 +1257,14 @@ BOOL PatternV2BoardExtraCheck(void *board_extra) {
     // Check if the heap has a move, then their key in the table has positive counts.
     double logprob = 0.0;
     if (! get_log_prob(be, m, &logprob)) {
-      printf("Hash count of move [%s] is below threshold [%d], while it is in the heap at %d/%d\n", move_str, h->params.cnt_threshold, i, be->heap_size);
+      fprintf(stderr,"Hash count of move [%s] is below threshold [%d], while it is in the heap at %d/%d\n", move_str, h->params.cnt_threshold, i, be->heap_size);
       heap_dump(be, -1);
       ShowBoard(&be->board, SHOW_ALL);
       return FALSE;
     }
     double prob = EXP( (logprob + mv->prior) / h->T );
     if (prob != mv->prob) {
-      printf("Move %s at %d/%d: the prob computed [%lf] != the recorded prob [%lf], logprob (from dict) = %lf, logprob = %lf, prior = %lf\n",
+      fprintf(stderr,"Move %s at %d/%d: the prob computed [%lf] != the recorded prob [%lf], logprob (from dict) = %lf, logprob = %lf, prior = %lf\n",
           move_str, i, be->heap_size, prob, mv->prob, logprob, mv->logprob, mv->prior);
       return FALSE;
     }
@@ -1274,10 +1274,10 @@ BOOL PatternV2BoardExtraCheck(void *board_extra) {
   }
   double relative_err = fabs(total_prob - be->total_prob) / (fabs(total_prob) + 1e-3);
   if (be->heap_size > 1 && relative_err > 1e-3) {
-    printf("The total_prob [%lf] is not the same as recorded [%lf]!\n", total_prob, be->total_prob);
-    printf("total_prob_sum2_saved: %lf, total_prob_sum2_recompute: %lf, counted_board: %d, heap_size: %d\n", total_prob_sum2_saved, total_prob_sum2_recompute, counted_board, be->heap_size);
-    printf("total_prob_sum2_saved_d: %lf, total_prob_sum2_recompute_d: %lf\n", total_prob_sum2_saved_d, total_prob_sum2_recompute_d);
-    printf("total_prob_d: %lf\n", total_prob_d);
+    fprintf(stderr,"The total_prob [%lf] is not the same as recorded [%lf]!\n", total_prob, be->total_prob);
+    fprintf(stderr,"total_prob_sum2_saved: %lf, total_prob_sum2_recompute: %lf, counted_board: %d, heap_size: %d\n", total_prob_sum2_saved, total_prob_sum2_recompute, counted_board, be->heap_size);
+    fprintf(stderr,"total_prob_sum2_saved_d: %lf, total_prob_sum2_recompute_d: %lf\n", total_prob_sum2_saved_d, total_prob_sum2_recompute_d);
+    fprintf(stderr,"total_prob_d: %lf\n", total_prob_d);
     heap_dump(be, -1);
     ShowBoard(&be->board, SHOW_ALL);
     return FALSE;
@@ -1287,11 +1287,11 @@ BOOL PatternV2BoardExtraCheck(void *board_extra) {
   // Check if other than the location that heap mentioned, other locations are 0.
   for (int m = 0; m < BOUND_COORD; ++m) {
     if (move_loc2[m] > 0) {
-      printf("Move %s is claimed to have idx %d, but the heap/moves has no such information.\n", get_move_str(m, b->_next_player, buf), move_loc2[m]);
+      fprintf(stderr,"Move %s is claimed to have idx %d, but the heap/moves has no such information.\n", get_move_str(m, b->_next_player, buf), move_loc2[m]);
       return FALSE;
     }
   }
-  printf("Total prob: %lf\n", be->total_prob);
+  fprintf(stderr,"Total prob: %lf\n", be->total_prob);
   return TRUE;
 }
 
@@ -1339,7 +1339,7 @@ void PatternV2PlayMove2(void *board_extra, const GroupId4 *ids) {
           }
         } ENDFOR4
         // Add move to the empty move list.
-        // printf("Add empty move %s\n", get_move_str(cc, b->_next_player, buf));
+        // fprintf(stderr,"Add empty move %s\n", get_move_str(cc, b->_next_player, buf));
         RepCheckListAdd(be->empty_list, cc);
         // if (! RepCheckListCheck(be->empty_list)) error("");
       } ENDTRAVERSE
@@ -1432,28 +1432,28 @@ void PatternV2HarvestMany(void *h, void *board_extra, const AllMovesExt *all_mov
   BoardExtra *be = (BoardExtra *)board_extra;
 
   // char buf[30];
-  // printf("HarvestMany, #moves: %d\n", all_moves->num_moves);
+  // fprintf(stderr,"HarvestMany, #moves: %d\n", all_moves->num_moves);
   for (int i = 0; i < all_moves->num_moves; ++i) {
     Coord m = all_moves->moves[i].m;
     Stone player = all_moves->moves[i].player;
-    // printf("Move %s\n", get_move_str(m, be->board._next_player, buf));
+    // fprintf(stderr,"Move %s\n", get_move_str(m, be->board._next_player, buf));
     PatternV2Harvest(h, board_extra, m);
     PatternV2PlayMove(board_extra, m, player);
     PatternV2Harvest(h, board_extra, m);
     if (be->h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(be)) error("");
-      else printf("All checks pass!\n");
+      else fprintf(stderr,"All checks pass!\n");
     }
   }
 }
 
 void PatternV2PrintStats(void *hh) {
   Handle *h = (Handle *)hh;
-  printf("---- PatternV2 -----\n");
-  printf("#hash_size: %" PRIu64 ", NUM_PRIOR: %d, LEN_PRIOR: %d\n", (uint64_t)HASH_SIZE, (int)NUM_PRIOR, (int)LEN_PRIOR);
-  printf("Verbose: %d, cnt_threshold: %d, alpha: %lf, batch_size: %d, temperature: %lf, ply_fraction: %lf\n",
+  fprintf(stderr,"---- PatternV2 -----\n");
+  fprintf(stderr,"#hash_size: %" PRIu64 ", NUM_PRIOR: %d, LEN_PRIOR: %d\n", (uint64_t)HASH_SIZE, (int)NUM_PRIOR, (int)LEN_PRIOR);
+  fprintf(stderr,"Verbose: %d, cnt_threshold: %d, alpha: %lf, batch_size: %d, temperature: %lf, ply_fraction: %lf\n",
       h->params.verbose, h->params.cnt_threshold, h->params.learning_rate, h->params.batch_size, h->T, PLY_FRACTION);
-  printf("neighbor: %s, nakade: %s, resp: %s, save_atari: %s, kill_other: %s, global: %s, ko: %s, put_group_to_atari: %s, eye: %s\n",
+  fprintf(stderr,"neighbor: %s, nakade: %s, resp: %s, save_atari: %s, kill_other: %s, global: %s, ko: %s, put_group_to_atari: %s, eye: %s\n",
       (h->params.prior_neighbor ? "true" : "false"),
       (h->params.prior_nakade ? "true" : "false"),
       (h->params.prior_resp ? "true" : "false"),
@@ -1465,13 +1465,13 @@ void PatternV2PrintStats(void *hh) {
       (h->params.prior_eye ? "true" : "false")
   );
 
-  printf("#Pattern: %" PRIu64 ", collision: %" PRIu64 "\n", h->num_pattern, h->collision);
-  printf("Sample from topn: %d\n", h->params.sample_from_topn);
+  fprintf(stderr,"#Pattern: %" PRIu64 ", collision: %" PRIu64 "\n", h->num_pattern, h->collision);
+  fprintf(stderr,"Sample from topn: %d\n", h->params.sample_from_topn);
   if (h->filter != NULL) {
-    printf("mbit: %d, k: %d\n", h->filter->mbit, h->filter->k);
-    printf("#query: %" PRIu64 ", #found: %" PRIu64 "\n", h->filter->num_queries, h->filter->num_found);
+    fprintf(stderr,"mbit: %d, k: %d\n", h->filter->mbit, h->filter->k);
+    fprintf(stderr,"#query: %" PRIu64 ", #found: %" PRIu64 "\n", h->filter->num_queries, h->filter->num_found);
   }
-  printf("-- End Patternv2 ---\n");
+  fprintf(stderr,"-- End Patternv2 ---\n");
 }
 
 void InitPerfSummary(PerfSummary *perf_summary) {
@@ -1511,7 +1511,7 @@ void PrintPerfSummary(const PerfSummary *summary) {
   double per_game = summary->total_duration / n_games;
   double per_move = summary->total_duration / n_selected;
 
-  printf("PerfSummary %s: #game: %d, #positions: %.2f%% (%d/%d), aver likelihood: %f, aver top1 in selection: %.2f%%, overall top1: %.2f%%, playout accuracy: %.2f%%, #recompute_Z: %d, per_game: %lf usec, per_move: %lf usec\n",
+  fprintf(stderr,"PerfSummary %s: #game: %d, #positions: %.2f%% (%d/%d), aver likelihood: %f, aver top1 in selection: %.2f%%, overall top1: %.2f%%, playout accuracy: %.2f%%, #recompute_Z: %d, per_game: %lf usec, per_move: %lf usec\n",
       summary->name, summary->n_games, ratio_selected * 100, summary->n_selected_moves, summary->n_all_moves,
       aver_loglikelihood, aver_top1_selected * 100, aver_top1_all * 100, playout_accuracy * 100, summary->n_recompute_Z, per_game * 1e6, per_move * 1e6);
 }
@@ -1536,7 +1536,7 @@ void PrintSampleSummary(const SampleSummary *summary) {
   assert(summary);
   int n = summary->n;
   double per_sample = summary->total_duration / (n + 1e-6);
-  printf("SampleSummary %s: random = %d/%d, top1 = %d/%d, top2 = %d/%d, top3 = %d/%d, counter = %d %d %d %d %d, max = %d, #recompute_Z = %d, per_sample: %lf usec\n",
+  fprintf(stderr,"SampleSummary %s: random = %d/%d, top1 = %d/%d, top2 = %d/%d, top3 = %d/%d, counter = %d %d %d %d %d, max = %d, #recompute_Z = %d, per_sample: %lf usec\n",
         summary->name,
         summary->num_topn[0], n, summary->num_topn[1], n, summary->num_topn[2], n, summary->num_topn[3], n,
         summary->num_counters[1], summary->num_counters[2], summary->num_counters[3],
@@ -1628,7 +1628,7 @@ Coord nakade_point_v2(const Board *board, Coord loc, int *type) {
 	area[area_n++] = loc;
 
   // Simple flood fill to find the region.
-  // printf("Flood fill...\n");
+  // fprintf(stderr,"Flood fill...\n");
 	for (int i = 0; i < area_n; i++) {
     FOR4(area[i], _, c) {
       // If that point is surrounding by our stone, return immediately.
@@ -1654,7 +1654,7 @@ Coord nakade_point_v2(const Board *board, Coord loc, int *type) {
 	 * we have for each area point, and histogram of this. This helps
 	 * us verify the appropriate bulkiness of the shape. */
   // Compute a few statistics.
-  // printf("Compute a few statistics...\n");
+  // fprintf(stderr,"Compute a few statistics...\n");
 	int neighbors[area_n]; int ptbynei[9] = {area_n, 0};
 	memset(neighbors, 0, sizeof(neighbors));
 	for (int i = 0; i < area_n; i++) {
@@ -1672,12 +1672,12 @@ Coord nakade_point_v2(const Board *board, Coord loc, int *type) {
 	/* For each given neighbor count, arbitrary one coordinate
 	 * featuring that. */
 
-  // printf("Anchor coordinate...\n");
+  // fprintf(stderr,"Anchor coordinate...\n");
 	Coord coordbynei[9];
 	for (int i = 0; i < area_n; i++)
 		coordbynei[neighbors[i]] = area[i];
 
-  // printf("Determine the type\n");
+  // fprintf(stderr,"Determine the type\n");
   *type = area_n;
 	switch (area_n) {
 		case 1: return M_PASS;
@@ -1694,7 +1694,7 @@ Coord nakade_point_v2(const Board *board, Coord loc, int *type) {
 			return M_PASS; // anything else
 	}
 
-  printf("This should never happen!");
+  fprintf(stderr,"This should never happen!");
   return M_PASS;
 }
 
@@ -2076,7 +2076,7 @@ void check_simple_semeai(BoardExtra *board_extra, Coord last) {
       unsigned short id = b->_infos[c].id;
       if (b->_groups[id].stones < our_size_thres || b->_groups[id].liberties > our_liberty_thres) continue;
 
-      // printf("Find large group. id = %d, #stones = %d, #liberties = %d\n", id, b->_groups[id].stones, b->_groups[id].liberties);
+      // fprintf(stderr,"Find large group. id = %d, #stones = %d, #liberties = %d\n", id, b->_groups[id].stones, b->_groups[id].liberties);
 
       // Check if any of our neighboring opponent groups has <= 3 liberties.
       // If so, we try reduce its liberty.
@@ -2085,7 +2085,7 @@ void check_simple_semeai(BoardExtra *board_extra, Coord last) {
           unsigned short other_id = b->_infos[cc].id;
           if (b->_groups[other_id].liberties > opp_liberty_thres) continue;
 
-          // printf("Find opponent group. other_id = %d, #stones = %d, #liberties = %d\n", other_id, b->_groups[other_id].stones, b->_groups[other_id].liberties);
+          // fprintf(stderr,"Find opponent group. other_id = %d, #stones = %d, #liberties = %d\n", other_id, b->_groups[other_id].stones, b->_groups[other_id].liberties);
 
           // Try reducing its liberty.
           int counter = 0;
@@ -2110,7 +2110,7 @@ void check_simple_semeai(BoardExtra *board_extra, Coord last) {
 
   if (board_extra->prior_must_move == M_PASS && move != M_PASS) {
     ShowBoard(b, SHOW_ALL);
-    // printf("simple_semeai: %s\n", get_move_str(move, player, buf));
+    // fprintf(stderr,"simple_semeai: %s\n", get_move_str(move, player, buf));
     board_extra->prior_must_move = move;
   }
 }
@@ -2125,7 +2125,7 @@ BOOL add_all_priors(BoardExtra *board_extra) {
   if (h->params.verbose >= PV_DEBUG) {
     char buf[30];
     const char *move_str = get_move_str(last, board_extra->board._next_player, buf);
-    printf("add_prior: last move: %s\n", move_str);
+    fprintf(stderr,"add_prior: last move: %s\n", move_str);
   }
 
   board_extra->prior_status = PRIOR_STATUS_NORMAL;
@@ -2226,8 +2226,8 @@ static unsigned int local_fast_random(void *context, unsigned int num_max) {
 */
 
 void PatternV2SampleMany(void *be, AllMovesExt *all_moves, SampleSummary *summary) {
-  if (be == NULL) { printf("be cannot be NULL!"); error(""); }
-  if (all_moves == NULL) { printf("all_moves cannot be NULL!"); error(""); }
+  if (be == NULL) { fprintf(stderr,"be cannot be NULL!"); error(""); }
+  if (all_moves == NULL) { fprintf(stderr,"all_moves cannot be NULL!"); error(""); }
 
   BoardExtra *board_extra = (BoardExtra *) be;
 
@@ -2259,12 +2259,12 @@ void PatternV2SampleMany(void *be, AllMovesExt *all_moves, SampleSummary *summar
     PRINT_DEBUG(board_extra->h, "Sampled move: %s, sample: %d/%d\n", get_move_str(ids.c, ids.player, buf), i, all_moves->num_moves);
     if (board_extra->h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(board_extra)) error("");
-      else printf("[%d/%d]: PatternV2SampleMany: After PatternV2PlayMove2: All checks pass!\n", i, all_moves->num_moves);
+      else fprintf(stderr,"[%d/%d]: PatternV2SampleMany: After PatternV2PlayMove2: All checks pass!\n", i, all_moves->num_moves);
     }
   }
 
   if (summary != NULL) summary->total_duration += wallclock() - start;
-  // printf("Total #moves = %d\n", i);
+  // fprintf(stderr,"Total #moves = %d\n", i);
 }
 
 void PatternV2SampleUntilSingleThread(void *be, AllMovesExt *moves, SampleSummary *summary) {
@@ -2273,7 +2273,7 @@ void PatternV2SampleUntilSingleThread(void *be, AllMovesExt *moves, SampleSummar
 }
 
 void PatternV2SampleUntil(void *be, void *context, RandFunc randfunc, AllMovesExt *moves, SampleSummary *summary) {
-  if (be == NULL) { printf("be cannot be NULL!"); error(""); }
+  if (be == NULL) { fprintf(stderr,"be cannot be NULL!"); error(""); }
 
   BoardExtra *board_extra = (BoardExtra *) be;
   const Handle *h = board_extra->h;
@@ -2324,11 +2324,11 @@ void PatternV2SampleUntil(void *be, void *context, RandFunc randfunc, AllMovesEx
     PRINT_DEBUG(h, "Sampled move: %s, sample: %d\n", get_move_str(ids.c, ids.player, buf), counter);
     if (h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(board_extra)) error("");
-      else printf("[%d/%d]: PatternV2SampleUntil: After PatternV2PlayMove2, all checks pass!\n", counter, max_num_moves);
+      else fprintf(stderr,"[%d/%d]: PatternV2SampleUntil: After PatternV2PlayMove2, all checks pass!\n", counter, max_num_moves);
     }
   }
   if (summary != NULL) summary->total_duration += wallclock() - start;
-  // printf("Total #moves = %d\n", counter);
+  // fprintf(stderr,"Total #moves = %d\n", counter);
 }
 
 const Board *PatternV2GetBoard(void *be) {
@@ -2428,9 +2428,9 @@ static void sample_from_empty_locs(const BoardExtra *be, void *context, RandFunc
 
   if (be->h->params.verbose >= PV_DEBUG) {
     char buf[30];
-    printf("Empty heap [ply = %d]! Random move %s...\n", b->_ply, get_move_str(m, b->_next_player, buf));
+    fprintf(stderr,"Empty heap [ply = %d]! Random move %s...\n", b->_ply, get_move_str(m, b->_next_player, buf));
     ShowBoard(b, SHOW_LAST_MOVE);
-    printf("\n");
+    fprintf(stderr,"\n");
   }
 
   TryPlay2(b, m, ids);
@@ -2455,7 +2455,7 @@ void PatternV2SampleTopn(void *be, int n, void *context, RandFunc randfunc, Grou
   Coord *moves = (Coord *)malloc(sizeof(Coord) * n);
   float *confidences = (float *)malloc(sizeof(float) * n);
   n = PatternV2GetTopn(be, n, moves, confidences, FALSE);
-  // printf("Sample top, nbefore = %d, n = %d\n", nbefore, n);
+  // fprintf(stderr,"Sample top, nbefore = %d, n = %d\n", nbefore, n);
 
   char buf[30];
   if (n == 0) {
@@ -2478,13 +2478,13 @@ void PatternV2SampleTopn(void *be, int n, void *context, RandFunc randfunc, Grou
     double sample = ((double)rand_int) / max_value * total_prob;
     double accu = 0;
 
-    // printf("sample = %lf\n", sample);
+    // fprintf(stderr,"sample = %lf\n", sample);
 
     for (int i = 0; i < n; ++i) {
-      // printf("[%d] %s, prob: %f\n", i, get_move_str(moves[i], S_EMPTY, buf), confidences[i] / total_prob);
+      // fprintf(stderr,"[%d] %s, prob: %f\n", i, get_move_str(moves[i], S_EMPTY, buf), confidences[i] / total_prob);
       accu += confidences[i];
       if (accu >= sample) {
-        // printf("picked!\n");
+        // fprintf(stderr,"picked!\n");
         move_ext->m = moves[i];
         move_ext->prob = confidences[i] / total_prob;
         move_ext->topn = i + 1;
@@ -2498,7 +2498,7 @@ void PatternV2SampleTopn(void *be, int n, void *context, RandFunc randfunc, Grou
     }
   }
 
-  // printf("Top sampling: sampled move %s from %d/%d\n", get_move_str(move_ext->m, move_ext->player, buf), move_ext->topn, n);
+  // fprintf(stderr,"Top sampling: sampled move %s from %d/%d\n", get_move_str(move_ext->m, move_ext->player, buf), move_ext->topn, n);
 
   free(moves);
   free(confidences);
@@ -2543,7 +2543,7 @@ void PatternV2Sample2(void *be, void *context, RandFunc randfunc, GroupId4 *ids,
   if (board_extra->prior_must_move != M_PASS && TryPlay2(b, board_extra->prior_must_move, ids)) {
     // ShowBoard(b, SHOW_ALL);
     // char buf[30];
-    // printf("Pattern_must move is %s\n", get_move_str(board_extra->prior_must_move, b->_next_player, buf));
+    // fprintf(stderr,"Pattern_must move is %s\n", get_move_str(board_extra->prior_must_move, b->_next_player, buf));
     if (move_ext != NULL) {
       move_ext->m = board_extra->prior_must_move;
       move_ext->type = SAMPLE_MUST_MOVE;
@@ -2562,7 +2562,7 @@ void PatternV2Sample2(void *be, void *context, RandFunc randfunc, GroupId4 *ids,
 
   // Scan the heap.
   if (h->params.verbose >= PV_INFO) {
-    printf("ply = %d, heap_size = %d\n", b->_ply, board_extra->heap_size);
+    fprintf(stderr,"ply = %d, heap_size = %d\n", b->_ply, board_extra->heap_size);
     ShowBoard(b, SHOW_ALL);
   }
 
@@ -2600,12 +2600,12 @@ void PatternV2Sample2(void *be, void *context, RandFunc randfunc, GroupId4 *ids,
     }
     // Check if valid.
     if (prev_m != m) {
-      // printf("  sampled: %s, prob: %lf\n", get_move_str(m, b->_next_player, buf), prob_val);
+      // fprintf(stderr,"  sampled: %s, prob: %lf\n", get_move_str(m, b->_next_player, buf), prob_val);
       prev_m = m;
       if (counter >= 1 && h->params.verbose >= PV_INFO) {
-        printf("  sampled: %s, prob: %lf\n", get_move_str(m, b->_next_player, buf), prob_val);
+        fprintf(stderr,"  sampled: %s, prob: %lf\n", get_move_str(m, b->_next_player, buf), prob_val);
         ShowBoard(b, SHOW_ALL);
-        printf("\n");
+        fprintf(stderr,"\n");
       }
     }
 
@@ -2618,7 +2618,7 @@ void PatternV2Sample2(void *be, void *context, RandFunc randfunc, GroupId4 *ids,
         total_prob -= board_extra->moves[m].prob;
 
         if (h->params.verbose >= PV_INFO) {
-          printf("Move %s is bad [%lf], remove it from consideration..\n",
+          fprintf(stderr,"Move %s is bad [%lf], remove it from consideration..\n",
               get_move_str(m, b->_next_player, buf), board_extra->moves[m].prob);
         }
       }
@@ -2629,7 +2629,7 @@ void PatternV2Sample2(void *be, void *context, RandFunc randfunc, GroupId4 *ids,
   int type = SAMPLE_HEAP;
   if (counter == max_counter) {
     if (h->params.verbose >= PV_INFO) {
-      printf("Sample random move..\n");
+      fprintf(stderr,"Sample random move..\n");
     }
     sample_from_empty_locs(board_extra, context, randfunc, ids);
     type = SAMPLE_RANDOM;
@@ -2742,19 +2742,19 @@ void PatternV2BoardExtraDumpInfo(void *be, int max_heap_dumped) {
 
   // Dump information for prior moves.
   char buf[30];
-  printf("----- Prior moves: #moves = %d--------\n", board_extra->num_prior_moves);
+  fprintf(stderr,"----- Prior moves: #moves = %d--------\n", board_extra->num_prior_moves);
   for (int i = 0; i < board_extra->num_prior_moves; ++i) {
     const PriorMove *pmv = &board_extra->prior_moves[i];
     get_move_str(pmv->m, board_extra->board._next_player, buf);
 
     if (pmv->w_type == WT_RESP) {
-      printf("[%d]: %s, type RESP, w_offset: %d, prior: %lf\n", i, buf, pmv->w_offset, pmv->prior);
+      fprintf(stderr,"[%d]: %s, type RESP, w_offset: %d, prior: %lf\n", i, buf, pmv->w_offset, pmv->prior);
     } else {
       const int type_idx = h->prior_type[pmv->w_offset];
-      printf("[%d]: %s, type %s, offset: %d, prior: %lf\n", i, buf, g_priors[type_idx].prior_name, pmv->w_offset - h->prior_offset[type_idx], pmv->prior);
+      fprintf(stderr,"[%d]: %s, type %s, offset: %d, prior: %lf\n", i, buf, g_priors[type_idx].prior_name, pmv->w_offset - h->prior_offset[type_idx], pmv->prior);
     }
   }
-  printf("----- End Prior moves --------\n");
+  fprintf(stderr,"----- End Prior moves --------\n");
 
   remove_all_priors(board_extra);
 }
@@ -2785,7 +2785,7 @@ void debug_heap_prior(BoardExtra *be) {
   Handle *h_m = (Handle *)((void *)h);
 
   ShowBoard(&be->board, SHOW_LAST_MOVE);
-  printf("Dump current heap!\n");
+  fprintf(stderr,"Dump current heap!\n");
   heap_dump(be, -1);
 
   int prev_verbose = h->params.verbose;
@@ -2793,7 +2793,7 @@ void debug_heap_prior(BoardExtra *be) {
   add_all_priors(be);
   remove_all_priors(be);
   h_m->params.verbose = prev_verbose;
-  printf("Dump heap again!\n");
+  fprintf(stderr,"Dump heap again!\n");
   heap_dump(be, -1);
 }
 
@@ -2805,7 +2805,7 @@ BOOL PatternV2Train(void *be2, void *g, Coord m_target, int training, int *topn,
   const Handle *h = be->h;
 
   if (grads == NULL && training != TRAINING_EVALONLY) {
-    printf("No gradient structure but we enter the training mode.\n");
+    fprintf(stderr,"No gradient structure but we enter the training mode.\n");
     error("");
   }
 
@@ -2827,7 +2827,7 @@ BOOL PatternV2Train(void *be2, void *g, Coord m_target, int training, int *topn,
   double total_prob = be->total_prob + absent_prob;
   double log_total_prob = LOG(total_prob);
   if (isnan(log_total_prob)) {
-    printf("Training: log_total_prob is nan! absent_prob = %lf, be->total_prob = %lf, num_absent_moves = %d, prev_total_prob = %lf\n",
+    fprintf(stderr,"Training: log_total_prob is nan! absent_prob = %lf, be->total_prob = %lf, num_absent_moves = %d, prev_total_prob = %lf\n",
         absent_prob, be->total_prob, num_absent_moves, be->total_prob_before_prior);
 
     remove_all_priors(be);
@@ -2853,7 +2853,7 @@ BOOL PatternV2Train(void *be2, void *g, Coord m_target, int training, int *topn,
       *loglikelihood = (mv->logprob + mv->prior) / h->T - log_total_prob;
       if (isnan(*loglikelihood)) {
         const char *move_str = get_move_str(m_target, b->_next_player, buf);
-        printf("nan loglikelihood! Move: %s, prob: %lf, logprob: %lf, prior: %lf, total_prob: %lf, log_total_prob: %lf\n",
+        fprintf(stderr,"nan loglikelihood! Move: %s, prob: %lf, logprob: %lf, prior: %lf, total_prob: %lf, log_total_prob: %lf\n",
             move_str, prob, mv->logprob, mv->prior, total_prob, log_total_prob);
         error("");
       }
@@ -2866,7 +2866,7 @@ BOOL PatternV2Train(void *be2, void *g, Coord m_target, int training, int *topn,
     if (training != TRAINING_EVALONLY) {
       if (isnan(grad)) {
         const char *move_str = get_move_str(m_target, b->_next_player, buf);
-        printf("grad is nan! Move: %s, prob: %lf, grad: %lf, un-normalized prob: %lf, total_prob: %lf\n", move_str, prob, grad, mv->prob, total_prob);
+        fprintf(stderr,"grad is nan! Move: %s, prob: %lf, grad: %lf, un-normalized prob: %lf, total_prob: %lf\n", move_str, prob, grad, mv->prob, total_prob);
         error("");
       }
 
@@ -2893,7 +2893,7 @@ BOOL PatternV2Train(void *be2, void *g, Coord m_target, int training, int *topn,
     if (h->params.verbose >= PV_DEBUG) {
       ShowBoard(&be->board, SHOW_LAST_MOVE);
       const char *move_str = get_move_str(m_target, b->_next_player, buf);
-      printf("Target move = %s, topn = %d\n", move_str, *topn);
+      fprintf(stderr,"Target move = %s, topn = %d\n", move_str, *topn);
       heap_dump(be, -1);
     }
   }
@@ -2903,13 +2903,13 @@ BOOL PatternV2Train(void *be2, void *g, Coord m_target, int training, int *topn,
   /*
   double prob_error = be->total_prob - be->total_prob_before_prior;
   if (fabs(prob_error) / fabs(be->total_prob) > 1e-2)  {
-    printf("Error in PatternV2Train. Current total_prob [%lf] is different from previous prob [%lf]\n", be->total_prob, be->total_prob_before_prior);
+    fprintf(stderr,"Error in PatternV2Train. Current total_prob [%lf] is different from previous prob [%lf]\n", be->total_prob, be->total_prob_before_prior);
     const char *move_str = get_move_str(m_target, b->_next_player, buf);
-    printf("Target move = %s, topn = %d\n", move_str, *topn);
+    fprintf(stderr,"Target move = %s, topn = %d\n", move_str, *topn);
 
     debug_heap_prior(be);
 
-    printf("Error in PatternV2Train. Try again: Current total_prob [%lf] is different from previous prob [%lf]\n", be->total_prob, be->total_prob_before_prior);
+    fprintf(stderr,"Error in PatternV2Train. Try again: Current total_prob [%lf] is different from previous prob [%lf]\n", be->total_prob, be->total_prob_before_prior);
     error("");
   }
   */
@@ -2934,7 +2934,7 @@ void PatternV2StartTraining(void *hh) {
       num_resp ++;
     }
   }
-  printf("Start Training. #noresp: %d, #resp: %d\n", num_noresp, num_resp);
+  fprintf(stderr,"Start Training. #noresp: %d, #resp: %d\n", num_noresp, num_resp);
 }
 
 /*
@@ -2980,7 +2980,7 @@ void PatternV2TrainMany(void *h, void *board_extra, const AllMovesExt *all_moves
     // Check whether all the constraints are good.
     if (be->h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(board_extra)) error("");
-      else printf("[%d/%d]: PatternV2TrainMany. Before PatternV2PlayMove, All checks pass!\n", i, all_moves->num_moves);
+      else fprintf(stderr,"[%d/%d]: PatternV2TrainMany. Before PatternV2PlayMove, All checks pass!\n", i, all_moves->num_moves);
     }
 
     // Play the next move.
@@ -2988,7 +2988,7 @@ void PatternV2TrainMany(void *h, void *board_extra, const AllMovesExt *all_moves
       // If the move is not valid, skip the game and return.
       if (be->h->params.verbose >= PV_DEBUG) {
         char buf[30];
-        printf("Move %s is not valid?", get_move_str(m, be->board._next_player, buf));
+        fprintf(stderr,"Move %s is not valid?", get_move_str(m, be->board._next_player, buf));
         ShowBoard(&be->board, SHOW_ALL);
         error("");
       } else {
@@ -3004,7 +3004,7 @@ void PatternV2TrainMany(void *h, void *board_extra, const AllMovesExt *all_moves
     // Check whether all the constraints are good.
     if (be->h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(board_extra)) error("");
-      else printf("[%d/%d]: PatternV2TrainMany. After PatternV2PlayMove, All checks pass!\n", i, all_moves->num_moves);
+      else fprintf(stderr,"[%d/%d]: PatternV2TrainMany. After PatternV2PlayMove, All checks pass!\n", i, all_moves->num_moves);
     }
   }
 
@@ -3059,7 +3059,7 @@ void PatternV2TrainManySaveGradients(void *board_extra, void *grads, const AllMo
     // Check whether all the constraints are good.
     if (be->h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(board_extra)) error("");
-      else printf("[%d/%d] PatternV2TrainManySaveGradients: Before PatternV2PlayMove: All checks pass!\n", i, all_moves->num_moves);
+      else fprintf(stderr,"[%d/%d] PatternV2TrainManySaveGradients: Before PatternV2PlayMove: All checks pass!\n", i, all_moves->num_moves);
     }
 
     // Play the next move.
@@ -3067,7 +3067,7 @@ void PatternV2TrainManySaveGradients(void *board_extra, void *grads, const AllMo
       // If the move is not valid, skip the game and return.
       if (be->h->params.verbose >= PV_DEBUG) {
         char buf[30];
-        printf("Move %s is not valid?", get_move_str(m, be->board._next_player, buf));
+        fprintf(stderr,"Move %s is not valid?", get_move_str(m, be->board._next_player, buf));
         ShowBoard(&be->board, SHOW_ALL);
         error("");
       } else {
@@ -3086,7 +3086,7 @@ void PatternV2TrainManySaveGradients(void *board_extra, void *grads, const AllMo
     // Check whether all the constraints are good.
     if (be->h->params.verbose >= PV_DEBUG) {
       if (! PatternV2BoardExtraCheck(board_extra)) error("");
-      else printf("[%d/%d] PatternV2TrainManySaveGradients: After PatternV2PlayMove: All checks pass!\n", i, all_moves->num_moves);
+      else fprintf(stderr,"[%d/%d] PatternV2TrainManySaveGradients: After PatternV2PlayMove: All checks pass!\n", i, all_moves->num_moves);
     }
   }
 
@@ -3161,14 +3161,14 @@ void PatternV2TrainPolicyGradient(void *h, void *grads, const GameScoring *scori
 
 BOOL LoadPatternV2(void *ctx, const char *filename) {
   if (filename == NULL) {
-    printf("LoadPatternV2: Filename is NULL!");
+    fprintf(stderr,"LoadPatternV2: Filename is NULL!");
     return FALSE;
   }
 
   Handle *h = (Handle *)ctx;
   FILE *fp = fopen(filename, "r");
   if (fp == NULL) {
-    printf("File %s cannot be opened!\n", filename);
+    fprintf(stderr,"File %s cannot be opened!\n", filename);
     return FALSE;
   }
 
@@ -3176,7 +3176,7 @@ BOOL LoadPatternV2(void *ctx, const char *filename) {
   uint64_t hash_size;
   fread(&hash_size, 1, sizeof(hash_size), fp);
   if (hash_size != HASH_SIZE) {
-    printf("Loaded hash size: %" PRIu64 ", hardcoded hash size: %" PRIu64 "\n", hash_size, (uint64_t)HASH_SIZE);
+    fprintf(stderr,"Loaded hash size: %" PRIu64 ", hardcoded hash size: %" PRIu64 "\n", hash_size, (uint64_t)HASH_SIZE);
     error("");
   }
   // Write the hashes.
@@ -3190,14 +3190,14 @@ BOOL LoadPatternV2(void *ctx, const char *filename) {
   uint64_t len_prior;
   fread(&len_prior, 1, sizeof(len_prior), fp);
   if (len_prior != LEN_PRIOR) {
-    printf("Loaded length of prior: %" PRIu64 ", hardcoded length of prior: %" PRIu64 "\n", len_prior, (uint64_t)LEN_PRIOR);
+    fprintf(stderr,"Loaded length of prior: %" PRIu64 ", hardcoded length of prior: %" PRIu64 "\n", len_prior, (uint64_t)LEN_PRIOR);
     error("");
   }
   fread(&h->prior_w, 1, sizeof(h->prior_w), fp);
 
   for (int i = 0; i < sizeof(h->k2w_resp) / sizeof(double); ++i) {
      if (fabs(h->k2w_resp[i]) > W_BOUND) {
-      printf("k2w_resp[%d]: %lf (out of bound, bound = %lf)\n", i, h->k2w_resp[i], W_BOUND);
+      fprintf(stderr,"k2w_resp[%d]: %lf (out of bound, bound = %lf)\n", i, h->k2w_resp[i], W_BOUND);
       CLAMP(h->k2w_resp[i]);
       // error("");
     }
@@ -3205,7 +3205,7 @@ BOOL LoadPatternV2(void *ctx, const char *filename) {
 
   for (int i = 0; i < sizeof(h->k2w_noresp) / sizeof(double); ++i) {
      if (fabs(h->k2w_noresp[i]) > W_BOUND) {
-      printf("k2w_noresp[%d]: %lf (out of bound, bound = %lf)\n", i, h->k2w_noresp[i], W_BOUND);
+      fprintf(stderr,"k2w_noresp[%d]: %lf (out of bound, bound = %lf)\n", i, h->k2w_noresp[i], W_BOUND);
       CLAMP(h->k2w_noresp[i]);
       // error("");
     }
@@ -3213,7 +3213,7 @@ BOOL LoadPatternV2(void *ctx, const char *filename) {
 
   for (int i = 0; i < sizeof(h->prior_w) / sizeof(double); ++i) {
     if (fabs(h->prior_w[i]) > W_BOUND) {
-      printf("prior_w[%d]: %lf (out of bound, bound = %lf)\n", i, h->prior_w[i], W_BOUND);
+      fprintf(stderr,"prior_w[%d]: %lf (out of bound, bound = %lf)\n", i, h->prior_w[i], W_BOUND);
       CLAMP(h->prior_w[i]);
       // error("");
     }
@@ -3221,7 +3221,7 @@ BOOL LoadPatternV2(void *ctx, const char *filename) {
   for (Coord m = 0; m < BOUND_COORD; ++m) {
     if (fabs(h->pos_w[m]) > W_BOUND) {
       char buf[30];
-      printf("pos_w[%s]: %lf (out of bound, bound = %lf)\n", get_move_str(m, S_EMPTY, buf), h->pos_w[m], W_BOUND);
+      fprintf(stderr,"pos_w[%s]: %lf (out of bound, bound = %lf)\n", get_move_str(m, S_EMPTY, buf), h->pos_w[m], W_BOUND);
       // error("");
       CLAMP(h->pos_w[m]);
     }
