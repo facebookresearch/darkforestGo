@@ -30,6 +30,7 @@ for i in `seq 1 $NUM_GPU`; do
       if grep -q "ready" $OUTPUT-${i}.log; then
         break
       fi
+      sleep 1
     done
 done
 
