@@ -1,6 +1,26 @@
 Facebook DarkForest Go Project
 ========
 
+DarkForest is a Go game engine powered by Deep Learning and developed at Facebook AI Research.  
+[It has a stable rank of 5d on the KGS servers](http://www.gokgs.com/graphPage.jsp?user=darkfmcts3)  
+Details of the engine are given in our [paper](http://arxiv.org/abs/1511.06410) and [poster](http://yuandong-tian.com/ICLR2016-poster.pdf), and if you use our engine in future research, cite our paper:
+
+```
+Better Computer Go Player with Neural Network and Long-term Prediction, ICLR 2016  
+Yuandong Tian, Yan Zhu
+
+@article{tian2015better,
+  title={Better Computer Go Player with Neural Network and Long-term Prediction},
+  author={Tian, Yuandong and Zhu, Yan},
+  journal={arXiv preprint arXiv:1511.06410},
+  year={2015}
+}
+```
+
+![Architecture](../blob/master/figure.png?raw=true)
+
+Although DarkForest is standalone and does not depend on external libraries, some portions of the tactics and pattern code were inspired by the Pachi [engine](https://github.com/pasky/pachi).
+
 Build
 ------------
 Dependencies: 
@@ -172,25 +192,4 @@ Please check the LICENSE file for the license of Facebook DarkForest Go engine.
 Acknowledgement
 ---------
 Although DarkForest is standalone and does not depend on external libraries, some portions of the tactics and pattern code were inspired by Pachi [engine](https://github.com/pasky/pachi).
-
-Reference
-----------
-If you use the pre-trained models or any engine, please reference the following paper:
-
-```
-Better Computer Go Player with Neural Network and Long-term Prediction, ICLR 2016  
-Yuandong Tian, Yan Zhu
-
-@article{tian2015better,
-  title={Better Computer Go Player with Neural Network and Long-term Prediction},
-  author={Tian, Yuandong and Zhu, Yan},
-  journal={arXiv preprint arXiv:1511.06410},
-  year={2015}
-}
-
-
-```
-
-Here is the arxiv [link](http://arxiv.org/abs/1511.06410) and poster [link](http://yuandong-tian.com/ICLR2016-poster.pdf)
-
 
