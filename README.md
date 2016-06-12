@@ -17,7 +17,7 @@ Yuandong Tian, Yan Zhu
 }
 ```
 
-![Architecture](../blob/master/figure.png?raw=true)
+![Architecture](../master/figure.png?raw=true)
 
 Although DarkForest is standalone and does not depend on external libraries, some portions of the tactics and pattern code were inspired by the Pachi [engine](https://github.com/pasky/pachi).
 
