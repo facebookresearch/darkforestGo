@@ -2,7 +2,12 @@ Facebook DarkForest Go Project
 ========
 
 DarkForest is a Go game engine powered by Deep Learning and developed at Facebook AI Research.  
-[It has a stable rank of 5d on the KGS servers](http://www.gokgs.com/graphPage.jsp?user=darkfmcts3)  
+* [It has a stable rank of 5d on the KGS servers](http://www.gokgs.com/graphPage.jsp?user=darkfmcts3)
+* [It received the 3rd place in the KGS Go Tournament](http://www.weddslist.com/kgs/past/119/index.html)
+* [It received the 2nd place in UEC Computer Go Cup](http://jsb.cs.uec.ac.jp/~igo/eng/result2.html)
+
+We hope that releasing the source code and pre-trained models are beneficial to the community.
+
 Details of the engine are given in our [paper](http://arxiv.org/abs/1511.06410) and [poster](http://yuandong-tian.com/ICLR2016-poster.pdf), and if you use our engine in future research, cite our paper:
 
 ```
@@ -132,18 +137,14 @@ quit
 
 For more commands, please use command `list_commands`, check the details of [GTP protocol](http://senseis.xmp.net/?GTP) or take a look at the source code.
 
-Award
+Differences with the award-winning versions
 --------------
-* Stable **KGS 5d**. [link](http://www.gokgs.com/graphPage.jsp?user=darkfmcts3)
-* 3rd place in KGS Go Tournament. [link](http://www.weddslist.com/kgs/past/119/index.html)
-* 2nd place in UEC Computer Go Cup. [link](http://jsb.cs.uec.ac.jp/~igo/eng/result2.html)
-
 The difference between this open source version (A) and that in KGS/competitions (B) is the following:
 * (A) runs on a single machine and uses pipe as client/server communications. (B) uses thrift RPC services as a way to communicate.
 * (B) uses more computational resources.
 * We might have tuned parameters for (B) extensively, but not for (A). We will give the tip of parameter tuning soon.
 
-Trouble Shooting 
+Troubleshooting 
 ----------------
 **Q**: My program hanged on genmove/quit, what happened?  
 **A**: Make sure you run the GPU server under ./local\_evaluator, the server remains active and the pipe file path matches between the server and the client.
