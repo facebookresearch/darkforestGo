@@ -189,7 +189,3 @@ License
 ----------
 Please check the LICENSE file for the license of Facebook DarkForest Go engine. 
 
-Acknowledgement
----------
-Although DarkForest is standalone and does not depend on external libraries, some portions of the tactics and pattern code were inspired by Pachi [engine](https://github.com/pasky/pachi).
-
