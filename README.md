@@ -1,4 +1,4 @@
-Facebook DarkForest Go Project
+DarkForest, the Facebook Go engine
 ========
 
 DarkForest is a Go game engine powered by Deep Learning and developed at Facebook AI Research.  
