@@ -3,6 +3,7 @@ DarkForest, the Facebook Go engine
 
 DarkForest is a Go game engine powered by Deep Learning and developed at Facebook AI Research.  
 * [It has a stable rank of 5d on the KGS servers](http://www.gokgs.com/graphPage.jsp?user=darkfmcts3)
+* [Pure Policy Network achieves a stable rank of 3d on KGS](http://www.gokgs.com/graphPage.jsp?user=darkfores2)
 * [It received the 3rd place in the KGS Go Tournament](http://www.weddslist.com/kgs/past/119/index.html)
 * [It received the 2nd place in UEC Computer Go Cup](http://jsb.cs.uec.ac.jp/~igo/eng/result2.html)
 
