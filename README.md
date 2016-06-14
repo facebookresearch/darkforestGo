@@ -7,7 +7,7 @@ DarkForest is a Go game engine powered by Deep Learning and developed at Faceboo
 * [It received the 3rd place in the KGS Go Tournament](http://www.weddslist.com/kgs/past/119/index.html)
 * [It received the 2nd place in UEC Computer Go Cup](http://jsb.cs.uec.ac.jp/~igo/eng/result2.html)
 
-We hope that releasing the source code and pre-trained models are beneficial to the community.
+We hope that releasing the source code and pre-trained [models](https://www.dropbox.com/sh/6nm8g8z163omb9f/AABQxJyV7EIdbHKd9rnPQGnha?dl=0) are beneficial to the community.
 
 Details of the engine are given in our [paper](http://arxiv.org/abs/1511.06410) and [poster](http://yuandong-tian.com/ICLR2016-poster.pdf), and if you use our engine in future research, cite our paper:
 
