@@ -194,11 +194,11 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
     self:clear_board()
     -- Load the sgf file and play until till_move
     io.stderr:write("Loading " .. filename)
-    local content = io.open(filename):read("*a")
+    local content = io.open(filename)
     if content == nil then 
         return false, "File " .. filename .. " cannot be loaded" 
     end
-    local game = assert(sgfloader.parse(content))
+    local game = assert(sgfloader.parse(content:read("*a")))
     goutils.apply_handicaps(self.b, game, true)
     -- If HA != 0, then we need to apply more handicap
     self.val_handi = game:get_handi_count() 
