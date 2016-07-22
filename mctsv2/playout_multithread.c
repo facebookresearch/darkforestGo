@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #include "playout_multithread.h"
 #include "tree_search.h"
@@ -252,13 +252,17 @@ void* ts_v2_init(const SearchParamsV2 *params, const TreeParams *tree_params, co
 }
 
 void ts_v2_setboard(void *ctx, const Board *new_board) {
-  if (ctx == NULL || new_board == NULL) return;
+  if (ctx == NULL) return;
   SearchHandle *s = (SearchHandle *)ctx;
   // Free the tree.
   s->num_prev_moves = 0;
   s->variants.dynkomi = 0.0;
 
-  CopyBoard(&s->board, new_board);
+  if (new_board != NULL) {
+    CopyBoard(&s->board, new_board);
+  } else {
+    ClearBoard(&s->board);
+  }
 
   // Reset all the trees.
   for (int i = 0; i < s->num_trees; ++i) {
