@@ -14,3 +14,14 @@ DarkForest uses simple default policy (trying to save when atari, trying to put 
 
 3. `pachi`   
 DarkForest uses Pachi's default policy. The majority of codes are in `./pachi_tactics`.
+
+Utilities
+---------
+
+Dump default policy:
+
+```bash
+th sample_one_pattern_v2.lua -p ../models/playout-policy.bin --temperature 0.5 --sgf_file [your_sgf_file] --move_from 230 --num_games 10 --num_moves 200 --save_prefix moves
+```
+
+Then it will dump the games played by playout policy and visualize them. If `save_prefix` is set, then the move sequence of each trial will also be saved. 
