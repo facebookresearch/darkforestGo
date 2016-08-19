@@ -187,11 +187,13 @@ function util_pkg.prepare_move(k, sortProb, sortInd, score)
     -- Add extra features, for now just the location of stones.
     utils.dprint("Add extra features")
     local f = util_pkg.features[k] 
-    -- Our stones: +1, opponent stones: -1 
-    local sent_feature = f["our stones"] - f["opponent stones"]
-    sent_feature = sent_feature:view(-1)
-    for i = 1, common.board_size * common.board_size do
-        mmove.extra[i - 1] = sent_feature[i]
+    if f ~= nil then
+        -- Our stones: +1, opponent stones: -1 
+        local sent_feature = f["our stones"] - f["opponent stones"]
+        sent_feature = sent_feature:view(-1)
+        for i = 1, common.board_size * common.board_size do
+            mmove.extra[i - 1] = sent_feature[i]
+        end
     end
     return mmove
 end

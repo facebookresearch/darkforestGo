@@ -90,7 +90,7 @@ while true do
                     all_features = torch.CudaTensor(max_batch, nplane, h, w):zero()
                     probs_cuda = torch.CudaTensor(max_batch, h*w)
                     sortProb_cuda = torch.CudaTensor(max_batch, h*w)
-                    sortInd_cuda = torch.CudaTensor(max_batch, h*w)
+                    sortInd_cuda = torch.CudaLongTensor(max_batch, h*w)
                 end
                 num_valid = num_valid + 1
                 all_features[num_valid]:copy(feature)
