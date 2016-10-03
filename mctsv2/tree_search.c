@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #include <stdlib.h>
 #include <math.h>
@@ -481,6 +481,8 @@ void tree_search_init_params(TreeParams *params) {
   params->num_rollout = 1000;
   params->num_dcnn_per_move = 1000;
   params->num_rollout_per_move = 1000;
+  params->min_rollout_peekable = 20000;
+
   params->expand_n_thres = 0;
 
   params->rcv_acc_percent_thres = 80;
@@ -530,6 +532,7 @@ void tree_search_print_params(void *ctx) {
   fprintf(stderr,"UCT: %s\n", params->use_old_uct ? "old" : "PUCT");
   fprintf(stderr,"num_rollout: %d\n", params->num_rollout);
   fprintf(stderr,"num_rollout_per_move: %d\n", params->num_rollout_per_move);
+  fprintf(stderr,"num_rollout_peekable: %d\n", params->min_rollout_peekable);
   fprintf(stderr,"num_dcnn_per_move: %d\n", params->num_dcnn_per_move);
   fprintf(stderr,"rcv_acc_percent_thres: %d\n", params->rcv_acc_percent_thres);
   fprintf(stderr,"rcv_max_num_move: %d\n", params->rcv_max_num_move);
@@ -1288,7 +1291,7 @@ BOOL tree_search_set_board(void *ctx, const Board *new_board) {
 }
 
 // ============================ Visualization code ================================
-Coord pick_best(const TreeHandle *s, TreeBlock *b, Stone player, float *highest_score, float *win_rate, TreeBlock **best_cursor) {
+Coord pick_best(const TreeHandle *s, const TreeBlock *b, Stone player, float *highest_score, float *win_rate, TreeBlock **best_cursor) {
   // get the child_idx that is (1) not empty and (2) is most visited.
   Coord best_m = M_PASS;
   *highest_score = -1.0;
@@ -1333,6 +1336,43 @@ Coord pick_best(const TreeHandle *s, TreeBlock *b, Stone player, float *highest_
     }
   }
   return best_m;
+}
+
+BOOL pick_best_n(const TreeHandle *s, const TreeBlock *b, Stone player, Moves *moves) {
+  // Return if the tree is empty.
+  if (b == TP_NULL || b->n == 0) return FALSE;
+
+  // Currently we use bubblesort on topk O(kn), but we could do better.
+  for (int i = 0; i < b->n; ++i) {
+    Coord m = b->data.moves[i];
+
+    int this_n = b->data.stats[i].total + 1;
+    float win = b->data.stats[i].black_win;
+    unsigned int n_parent = b->parent->data.stats[b->parent_offset].total;
+    if (player == S_WHITE) win = this_n - win;
+
+    if (this_n == 0) error("This_n cannot be zero!");
+
+    moves->moves[i].m = m;
+    moves->moves[i].x = X(m);
+    moves->moves[i].y = Y(m);
+    moves->moves[i].player = player;
+    moves->moves[i].win_games = win;
+    moves->moves[i].total_games = this_n;
+    moves->moves[i].win_rate = ( (float)win + 0.5 ) / this_n;
+  }
+
+  // Bubble sort.
+  for (int i = 0; i < moves->num_moves; ++i) {
+    for (int j = i + 1; j < b->n; ++j) {
+      if (moves->moves[i].total_games < moves->moves[j].total_games) {
+        Move tmp = moves->moves[j];
+        moves->moves[j] = moves->moves[i];
+        moves->moves[i] = tmp;
+      }
+    }
+  }
+  return TRUE;
 }
 
 static void show_picked_move_cnn_impl(const TreeHandle *s, TreeBlock *b, Stone player, int space) {
@@ -1696,6 +1736,59 @@ BOOL tree_search_undo_pass(void *ctx, const Board *before_board) {
   // fprintf(stderr,"After undo pass... next_player = %d\n", s->board._next_player);
   // fprintf(stderr,"last4 = %d, last3 = %d, last2 = %d, last = %d\n", s->board._last_move4, s->board._last_move3, s->board._last_move2, s->board._last_move);
   return res;
+}
+
+BOOL tree_search_peek(void *ctx, Moves *moves, const Board *verify_board) {
+  // Peek the current search thread and return top k moves.
+  // topk is stored in all_moves->num_moves;
+  if (ctx == NULL) error("ctx cannot be NULL!");
+  if (moves == NULL) error("move_seq cannot be zero!");
+
+  TreeHandle *s = (TreeHandle *)ctx;
+  TreePool *p = &s->p;
+  Stone player = s->board._next_player;
+
+  // This approach only works in pondering mode.
+  if (! s->params.use_pondering) {
+    printf("Warning: tree_search_peek only works in pondering mode.\n");
+    return FALSE;
+  }
+
+  if (s->params.life_and_death_mode) {
+    printf("Warning: tree_search_peek has not been implemented in life_and_death mode.\n");
+    return FALSE;
+  }
+
+  // If we just start simulation, we should just wait..
+  int total_simulation;
+  do {
+    total_simulation = __atomic_load_n(&p->root->data.stats[0].total, __ATOMIC_ACQUIRE);
+  } while (total_simulation < s->params.min_rollout_peekable);
+
+  // Then we block all threads and read the results.
+  block_all_threads(s, TRUE);
+
+  if (p->root == NULL) error("Root should not be null!\n");
+
+  // Check if the board is right.
+  if (verify_board != NULL) {
+    // If the two boards are not the same, error!
+    if (!CompareBoard(&s->board, verify_board)) {
+      printf("Internal Board:\n");
+      ShowBoard(&s->board, SHOW_ALL);
+      printf("External Board:\n");
+      ShowBoard(verify_board, SHOW_ALL);
+      error("The two boards are not the same!\n");
+    }
+  }
+
+  TreeBlock *b = p->root->children[0].child;
+  pick_best_n(s, b, player, moves);
+
+  // Resume the search.
+  resume_all_threads(s);
+
+  return TRUE;
 }
 
 Move tree_search_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) {

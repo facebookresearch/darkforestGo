@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #ifndef _PLAYOUT_COMMON_H_
 #define _PLAYOUT_COMMON_H_
@@ -26,5 +26,10 @@ typedef struct {
   float win_games;
   int total_games;
 } Move;
+
+typedef struct {
+  Move moves[MACRO_BOARD_SIZE*MACRO_BOARD_SIZE];
+  int num_moves;
+} Moves;
 
 #endif

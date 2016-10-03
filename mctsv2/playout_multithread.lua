@@ -182,6 +182,17 @@ function playout.play_rollout(tr, filename, b)
     return best_m, res
 end
 
+function playout.peek_rollout(tr, topk, b)
+    local topk_moves = ffi.new("Moves")
+    C.ts_v2_peek(tr, topk, topk_moves, b)
+    local res = { }
+    for i = 0, topk - 1 do
+        local m = topk_moves.moves[i]
+        table.insert(res, { x = m.x + 1, y = m.y + 1, n = m.total_games, win_rate = m.win_rate })
+    end
+    return res
+end
+
 function playout.save_tree_feature(tr, filename)
     C.ts_v2_tree_to_feature(tr, filename)
 end

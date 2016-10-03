@@ -193,7 +193,7 @@ end
 function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
     self:clear_board()
     -- Load the sgf file and play until till_move
-    io.stderr:write("Loading " .. filename)
+    io.stderr:write("Loading " .. filename .. " board flip: " .. donnot_flip_vertical)
     local content = io.open(filename)
     if content == nil then 
         return false, "File " .. filename .. " cannot be loaded" 
@@ -617,9 +617,31 @@ function cnnplayer:genmove(player)
     board.show_fancy(self.b, 'all_rows_cols')
     io.stderr:write("Time spent in genmove " .. self.b._ply .. " : " ..  common.wallclock() - t_start)
     self:add_to_sgf_history(xf, yf, player)
+
+    -- Keep this win rate.
+    self.win_rate = win_rate
     
     -- Tell the GTP server we have chosen this move
     return true, move, win_rate
+end
+
+function cnnplayer:peek(topk)
+    topk = not topk and 3 or tonumber(topk) 
+    if not self.cbs.move_peeker then 
+        return false, "Unsupported command: peek " .. topk
+    end
+    local moves = self.cbs.move_peeker(self.b, self.b._next_player, topk)
+    local s = ""
+    for i = 1, topk do
+        local m = moves[i]
+        local move = goutils.compose_move_gtp(m.x, m.y)
+        s = s .. string.format("%s %f %f; ", move, m.n, m.win_rate)
+    end
+    return true, s  
+end
+
+function cnnplayer:winrate() 
+    return true, self.win_rate and string.format("%.4f", self.win_rate) or "unknown"
 end
 
 function cnnplayer:name() 
@@ -742,7 +764,8 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
 
     local valid_callbacks = { 
         move_predictor = true, 
-        move_receiver = true, 
+        move_receiver = true,
+        move_peeker = true,
         new_game = true, 
         undo_func = true, 
         set_board = true, 
@@ -759,6 +782,12 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
 
     assert(callbacks)
     assert(callbacks.move_predictor)
+
+    --[[
+    if not callbacks.move_peeker then
+        print("Warning! peeker is absent!")
+    end
+    ]]
 
     -- Check if there is any misnaming.
     for k, f in pairs(callbacks) do
@@ -806,7 +835,7 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
 
     if self.opt.setup_board and self.opt.setup_board ~= "" then
         local items = pl.stringx.split(self.opt.setup_board)
-        self:setup_board(items[1], items[2])
+        self:setup_board(items[1], items[2], items[3])
     end
     if self.opt.exec and self.opt.exec ~= "" then
         local valid, _, quit = self:run_cmds(self.opt.exec)

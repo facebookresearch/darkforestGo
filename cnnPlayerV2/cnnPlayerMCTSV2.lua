@@ -275,6 +275,10 @@ function callbacks.move_receiver(x, y, player)
     playoutv2.prune_xy(tr, x, y, player, prefix)
 end
 
+function callbacks.move_peeker(b, player, topk)
+    return playoutv2.peek_rollout(tr, topk, b)
+end
+
 function callbacks.undo_func(b, undone_move)
     if goutils.coord_is_pass(undone_move) then 
         playoutv2.undo_pass(tr, b)

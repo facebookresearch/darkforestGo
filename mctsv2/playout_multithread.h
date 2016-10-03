@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #ifndef _PLAYOUT_MULTITHREAD_H_
 #define _PLAYOUT_MULTITHREAD_H_
@@ -52,6 +52,9 @@ void ts_v2_thread_off(void *h);
 // Return the best move as a result of the current search.
 // Move_seq must not be NULL and will store the move sequence (if l&d mode is on).
 Move ts_v2_pick_best(void *h, AllMoves *move_seq, const Board *verify_board);
+
+// Peek the topk move and save it to moves.
+void ts_v2_peek(void *h, int topk, Moves *moves, const Board *verify_board);
 
 // Output the current tree to a json file.
 void ts_v2_tree_to_json(void *h, const char *json_prefix);

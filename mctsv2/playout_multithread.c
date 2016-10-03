@@ -359,8 +359,43 @@ void ts_v2_free(void *ctx) {
   }
 }
 
+void ts_v2_peek(void *ctx, int topk, Moves *moves, const Board *verify_board) {
+  if (ctx == NULL) error("ctx cannot be NULL!");
+  if (moves == NULL) error("move_seq cannot be zero!");
+
+  SearchHandle *s = (SearchHandle *)ctx;
+  Stone player = s->board._next_player;
+
+  // Check if the board is right.
+  if (verify_board != NULL) {
+    // If the two boards are not the same, error!
+    if (!CompareBoard(&s->board, verify_board)) {
+      printf("[ts_v2_pick_best]: Internal Board:\n");
+      ShowBoard(&s->board, SHOW_ALL);
+      printf("[ts_v2_pick_best]: External Board:\n");
+      ShowBoard(verify_board, SHOW_ALL);
+      error("The two boards are not the same!\n");
+    }
+  }
+
+  moves->num_moves = topk;
+
+  double t;
+  timeit
+    tree_search_peek(s->trees[0], moves, verify_board);
+  endtime2(t)
+
+  char buf[100];
+  printf("[ts_v2_peek] Ply: %d, Time elapsed: %lf\n", s->board._ply, t);
+  for (int i = 0; i < moves->num_moves; ++i) {
+    const Move *m = &moves->moves[i];
+    printf("[ts_v2_peek:%d]: %s, win_rate: %f [%.2f/%d]\n", i, get_move_str(m->m, player, buf), m->win_rate, m->win_games, m->total_games);
+  }
+}
+
 Move ts_v2_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) {
   if (ctx == NULL) error("ctx cannot be NULL!");
+
   if (all_moves == NULL) error("move_seq cannot be zero!");
 
   SearchHandle *s = (SearchHandle *)ctx;

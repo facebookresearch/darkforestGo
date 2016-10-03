@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #ifndef _TREE_SEARCH_H_
 #define _TREE_SEARCH_H_
@@ -66,6 +66,9 @@ void tree_search_to_feature(void *ctx, const char *output_filename);
 
 // Return the best move. Remember to call tree_search_prune_ours after the decision is made.
 Move tree_search_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board);
+
+// Peek the top few moves, topk = moves->num_moves.
+BOOL tree_search_peek(void *ctx, Moves *moves, const Board *verify_board);
 
 // Prune the tree given the move.
 void tree_search_prune_opponent(void *ctx, Coord m);
