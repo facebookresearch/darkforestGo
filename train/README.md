@@ -8,7 +8,8 @@ it for training the policy network.
 
 2. `./rl_framework/examples/go` The training code for policy network.
 
-For simple usage, the main program for training is under the root directory. Simply run `./train.sh`
+For simple usage, the main program for training is under the root directory. Simply copy the data
+from [here](https://www.dropbox.com/sh/ihzvzajywmfvbhm/AACIgYxew4daP1LXY_HCKwNla?dl=0) to `./dataset` and run `./train.sh`
 will start the training procedure, which is an implementation of our [paper](http://arxiv.org/abs/1511.06410) plus a few modifications, including adding batch-normalization layers.
 
 With 4 GPUs, the training procedure gives 56.1% top-1 accuracy in KGS dataset in 3.5 days, and 57.1% top-1 in 6.5 days (see the simple log below). The parameters used are the following: `--epoch_size 256000 --GPU 4 --data_augmentation --alpha 0.1 --nthread 4`
