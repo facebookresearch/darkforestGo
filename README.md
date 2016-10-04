@@ -141,7 +141,8 @@ For more commands, please use command `list_commands`, check the details of [GTP
 
 Training
 --------------
-To train the policy network from scratch, please run `./train.sh`. 1 GPU is needed.
+To train the policy network from scratch, please run `./train.sh`. 1 GPU is needed. Please install
+`torchnet` first (e.g., `luarocks install torchnet`).
 
 Differences with the award-winning versions
 --------------
