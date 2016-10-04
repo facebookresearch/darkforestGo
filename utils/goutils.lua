@@ -3,21 +3,22 @@
 -- All rights reserved.
 --
 -- This source code is licensed under the BSD-style license found in the
--- LICENSE file in the root directory of this source tree. An additional grant 
+-- LICENSE file in the root directory of this source tree. An additional grant
 -- of patent rights can be found in the PATENTS file in the same directory.
--- 
+--
 
 local goutils = {}
 local pl = require 'pl.import_into'()
 local common = require("common.common")
 local sgfloader = require('utils.sgf')
 local board = require('board.board')
+require 'image'
 -- Feature extractor, usage:
 -- goutils.get_features(b, t)
---    wher t is the table that contains features. 
+--    wher t is the table that contains features.
 --
 
-function goutils.get_old_features(b, player) 
+function goutils.get_old_features(b, player)
     -- we should flip the board and color so we are always black (THIS IS NOT TRUE for player code)
     -- we should calculate liberties at each position
     -- we should get ko
@@ -130,14 +131,14 @@ local static_position_mask
 local static_border_mask
 
 local feature_mapping = {
-    liberties = { 
+    liberties = {
         function (b, player) return feature_liberties(b, player) end, 3
     },
     history = function (b, player) return feature_decay_history(b, player) end,
     stones = function (b, player) return board.get_stones(b, player) end,
     simpleko = function (b, player) return board.get_simple_ko(b, player) end,
-    -- Position mask: the closer a position is to the corner, the higher the value. 
-    position_mask = function (b, player) 
+    -- Position mask: the closer a position is to the corner, the higher the value.
+    position_mask = function (b, player)
         if not static_position_mask then
             local s = common.board_size
             static_position_mask = torch.FloatTensor(s, s)
@@ -152,7 +153,7 @@ local feature_mapping = {
         return static_position_mask
     end,
     -- Return whether a location is on the border of the board.
-    border = function (b, player) 
+    border = function (b, player)
         if not static_border_mask then
             local s = common.board_size
             static_border_mask = torch.FloatTensor(s, s)
@@ -164,26 +165,26 @@ local feature_mapping = {
         end
         return static_border_mask
     end,
-    -- Return the color each empty site becomes to 
+    -- Return the color each empty site becomes to
     closest_color = {
-        function (b, player, named_features) 
+        function (b, player, named_features)
             -- print(named_features)
             -- local our_dist = distance_transform(named_features['our stones']):view(1, common.board_size, common.board_size)
             -- local opponent_dist = distance_transform(named_features['opponent stones']):view(1, common.board_size, common.board_size)
             local our_dist = board.get_distance_map(b, player)
-            local opponent_dist = board.get_distance_map(b, board.opponent(player)) 
+            local opponent_dist = board.get_distance_map(b, board.opponent(player))
             -- Check which distance is smaller for the border.
             return torch.cat(our_dist:lt(opponent_dist), opponent_dist:lt(our_dist), 1):float()
         end, 2
     },
     attention = {
-        function (b, player, named_features, dataset_info) 
+        function (b, player, named_features, dataset_info)
             local s = common.board_size
             if type(dataset_info) == 'string' then
                 if dataset_info == 'tsumego' then
                     -- In this case, we only focus on the rectangle with stones, with some margins.
                     local our_dist = board.get_distance_map(b, player)
-                    local opponent_dist = board.get_distance_map(b, board.opponent(player)) 
+                    local opponent_dist = board.get_distance_map(b, board.opponent(player))
                     local dist_to_all_stones = torch.cmin(our_dist, opponent_dist)
                     -- Threshold the distance to get the attention.
                     return dist_to_all_stones:lt(5):float()
@@ -197,8 +198,8 @@ local feature_mapping = {
                 -- print(string.format("Attention in goutils = sub(%d, %d), sub(%d, %d)", a[1], a[3], a[2], a[4]))
                 attention[{{a[1], a[3]}, {a[2], a[4]}}]:fill(1.0)
                 -- require 'fb.debugger'.enter()
-                return attention 
-            else 
+                return attention
+            else
                 error("dataset_info is invalid!")
             end
         end, 1
@@ -215,7 +216,7 @@ local function split_cmds(f, player)
     local ss = pl.utils.split(f)
     local player_cmd, feature_cmd
     local actor
-    if #ss == 2 then 
+    if #ss == 2 then
         player_cmd, feature_cmd = unpack(ss)
         actor = player_mapping[player_cmd](player)
     else
@@ -225,9 +226,9 @@ local function split_cmds(f, player)
     local func = feature_mapping[feature_cmd]
     local dim = 1
     -- print(func)
-    if type(func) == 'table' then 
+    if type(func) == 'table' then
         dim = func[2]
-        func = func[1] 
+        func = func[1]
     end
     return actor, func, dim
 end
@@ -237,7 +238,7 @@ function goutils.get_feature_dim(fnames)
     for _, f in ipairs(fnames) do
         local actor, func, n = split_cmds(f, common.black)
         d = d + n
-    end   
+    end
     return d
 end
 
@@ -253,7 +254,7 @@ function goutils.get_features(b, player, fnames, dataset_info)
         local actor, func, n = split_cmds(f, player)
         features[{{idx + 1, idx + n}, {}, {}}]:copy(func(b, actor, named_features, dataset_info))
 
-        -- Add named feature index. 
+        -- Add named feature index.
         if n == 1 then
             named_features[f] = features[idx + 1]
         else
@@ -267,15 +268,15 @@ function goutils.get_features(b, player, fnames, dataset_info)
 end
 
 local features_list = {
-    complete = { 
-        "our liberties", "opponent liberties", "our simpleko", "our stones", "opponent stones", "empty stones", "our history", "opponent history" 
+    complete = {
+        "our liberties", "opponent liberties", "our simpleko", "our stones", "opponent stones", "empty stones", "our history", "opponent history"
     },
-    extended = { 
-        "our liberties", "opponent liberties", "our simpleko", "our stones", "opponent stones", "empty stones", "our history", "opponent history", 
+    extended = {
+        "our liberties", "opponent liberties", "our simpleko", "our stones", "opponent stones", "empty stones", "our history", "opponent history",
         "border", 'position_mask', 'closest_color'
     },
     extended_with_attention = {
-        "our liberties", "opponent liberties", "our simpleko", "our stones", "opponent stones", "empty stones", "our history", "opponent history", 
+        "our liberties", "opponent liberties", "our simpleko", "our stones", "opponent stones", "empty stones", "our history", "opponent history",
         "border", 'position_mask', 'closest_color', 'attention'
     },
 }
@@ -286,7 +287,7 @@ function goutils.addGrade(feature, grade)
         channel = 1
     elseif string.sub(grade,-1,-1)=='p' then
         channel = 9
-    else 
+    else
         --assert(string.sub(grade,-1,-1)=='d', string.format('get rank wrong, %s \n', grade))
         --channel = tonumber(string.sub(grade,1,-2))
         if string.sub(grade, -1, -1) == 'd' then
@@ -307,8 +308,8 @@ function goutils.addGrade(feature, grade)
 end
 
 -- Opt:
---    userank = true/false 
---    type = [old, complete, extended, extended_with_attention] 
+--    userank = true/false
+--    type = [old, complete, extended, extended_with_attention]
 -- If opt.attention exists and opt.feture_type == 'extended_with_attention", then get_feature will use the attention region
 function goutils.extract_feature(b, player, opt, rank, dataset_info)
     local features, named_features
@@ -326,7 +327,7 @@ function goutils.extract_feature(b, player, opt, rank, dataset_info)
         end
         features, named_features = goutils.get_features(b, player, features_list[opt.feature_type], dataset_info)
     end
-    if opt.userank then 
+    if opt.userank then
         return goutils.addGrade(features, rank), named_features
     else
         return features, named_features
@@ -373,7 +374,7 @@ function goutils.rotateMove(x, y, style)
     local t = style % 2
 
     if h == 1 then
-        y = common.board_size + 1 - y 
+        y = common.board_size + 1 - y
     end
 
     if v == 1 then
@@ -383,7 +384,7 @@ function goutils.rotateMove(x, y, style)
     if t == 1 then
         x, y = y, x
     end
-    return x, y 
+    return x, y
 end
 
 local function rotate_table(game, style)
@@ -394,7 +395,7 @@ local function rotate_table(game, style)
         return game
     elseif type(game) == 'string' and #game == 2 then
         -- Rotate the coordinate.
-        local x, y = sgfloader.parse_move(game) 
+        local x, y = sgfloader.parse_move(game)
         x, y = goutils.rotateMove(x, y, style)
         local player_str, coord_str = sgfloader.compose_move(x, y)
         return coord_str
@@ -409,7 +410,7 @@ function goutils.rotateSgf(game, style)
     return rotate_table(game, style)
 end
 
-function goutils.is_pass(x, y) 
+function goutils.is_pass(x, y)
     return x == 0 and y == 0
 end
 
@@ -418,7 +419,7 @@ function goutils.coord_is_pass(m)
     return m == 0
 end
 
-function goutils.is_resign(x, y) 
+function goutils.is_resign(x, y)
     return x == 1 and y == 0
 end
 
@@ -426,14 +427,14 @@ function goutils.parse_move_gtp(coord, player)
     if not coord then return end
     coord = coord:lower()
     local x, y
-    if coord == 'pass' then 
+    if coord == 'pass' then
         x, y = 0, 0
     elseif coord == 'resign' then
         x, y = 1, 0
     else
         x = coord:byte(1) - 97 + 1
         -- Note that gtp movement skip letter 'I', so we should adjust it accordingly.
-        if x > 9 then x = x - 1 end 
+        if x > 9 then x = x - 1 end
         y = tonumber(coord:sub(2, -1))
     end
     if player ~= nil then
@@ -454,7 +455,7 @@ function goutils.compose_move_gtp(x, y, player)
         else error(string.format("goutils.compose_move_gtp: Parsing error on (%d, %d, %d)!", x, y, player)); end
     else
         -- Note that gtp movement skip letter 'I', so we should adjust it accordingly.
-        if x >= 9 then x = x + 1 end 
+        if x >= 9 then x = x + 1 end
         coord_str = string.char(x + 65 - 1) .. tostring(y)
     end
 
@@ -463,7 +464,7 @@ end
 
 function goutils.moveIdx2xy(idx)
     local x = math.floor((idx - 1) / common.board_size) + 1
-    local y = (idx - 1) % common.board_size + 1 
+    local y = (idx - 1) % common.board_size + 1
     return x, y
 end
 
@@ -521,7 +522,7 @@ function goutils.batch_play_with_cnn(bs, opt, rank, model)
     local nbatch = #bs
     for i = 1, nbatch do
         local feature, named_features = goutils.extract_feature(bs[i], bs[i]._next_player, opt, rank)
-        if not fempty then 
+        if not fempty then
             nplane, h, w = unpack(feature:size():totable())
             fempty = feature.new():resize(nbatch, h*w)
             features = feature.new():resize(nbatch, nplane, h, w)
@@ -532,8 +533,8 @@ function goutils.batch_play_with_cnn(bs, opt, rank, model)
     if not opt.usecpu then
        features = features:cuda()
     end
-    
-    -- Apply conv model. 
+
+    -- Apply conv model.
     local output = model:forward(features)
     -- If the output is multitask, only take the first one.
     local output_move_pred = type(output) == 'table' and output[1] or output
@@ -558,8 +559,8 @@ function goutils.play_with_cnn(b, player, opt, rank, model)
     if not opt.usecpu then
        feature = feature:cuda()
     end
-    
-    -- Apply conv model. 
+
+    -- Apply conv model.
     local output = model:forward(feature:view(1, nplane, h, w))
     -- If the output is multitask, only take the first one.
     local output_move_pred = type(output) == 'table' and output[1] or output
@@ -590,12 +591,12 @@ function goutils.sample_from_rnn(b, player, opt, rank, model)
     if not opt.usecpu then
        feature = feature:cuda()
     end
- 
+
     -- Apply the first model
     local cnn_model = model:get(1):get(1)
     local rnn_model = model:get(2)
 
-    local seq_len = rnn_model.params.seq_length 
+    local seq_len = rnn_model.params.seq_length
 
     -- Apply the CNN model
     local representation = cnn_model:forward(feature:view(1, nplane, h, w))
@@ -604,17 +605,17 @@ function goutils.sample_from_rnn(b, player, opt, rank, model)
     local second_rep = rnn_model:sample({representation, moves})
 
     -- Now we have the sampled move.
-    return moves[1][{{2, seq_len + 1}}] 
+    return moves[1][{{2, seq_len + 1}}]
 end
 
 function goutils.check_move(b, x, y, player)
     -- Never play illegal moves.
-    if not board.tryplay(b, x, y, player) then 
+    if not board.tryplay(b, x, y, player) then
         return false, "Not a valid move"
     end
     -- Never play self-atari if the loss is huge.
     local is_self_atari, num_stones = board.is_self_atari(b, x, y, player)
-    if is_self_atari and num_stones >= 10 then 
+    if is_self_atari and num_stones >= 10 then
         return false, string.format("Self-atari with %d stone loss", num_stones)
     end
     -- Never play in a true eye. Maybe sometime we need to do that?
