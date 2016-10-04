@@ -3,9 +3,9 @@
 -- All rights reserved.
 --
 -- This source code is licensed under the BSD-style license found in the
--- LICENSE file in the root directory of this source tree. An additional grant 
+-- LICENSE file in the root directory of this source tree. An additional grant
 -- of patent rights can be found in the PATENTS file in the same directory.
--- 
+--
 
 package.path = package.path .. ';../?.lua'
 
@@ -26,7 +26,7 @@ local opt = pl.lapp[[
     --dcnn_rollout    (default -1)           The number of dcnn rollout we use (If we set to -1, then it is the same as rollout), if cpu_only is set, then dcnn_rollout is not used.
     --dp_max_depth    (default 10000)        The max_depth of default policy.
     -v,--verbose      (default 1)            The verbose level (1 = critical, 2 = info, 3 = debug)
-    --print_tree                             Whether print the search tree. 
+    --print_tree                             Whether print the search tree.
     --max_send_attempts (default 3)          #attempts to send to the server.
     --pipe_path         (default "/data/local/go/") Pipe path
     --tier_name         (default "ai.go-evaluator") Tier name
@@ -40,16 +40,16 @@ local opt = pl.lapp[[
     --acc_prob_thres    (default 0.8)        Accumulated probability threshold. We remove the remove if by the time we see it, the accumulated prob is greater than this thres.
     --max_num_move      (default 20)          Maximum number of moves to consider in each tree node.
     --min_num_move      (default 1)          Minimum number of moves to consider in each tree node.
-    --decision_mixture_ratio (default 5.0)   Mixture MCTS count ratio with cnn_confidence. 
+    --decision_mixture_ratio (default 5.0)   Mixture MCTS count ratio with cnn_confidence.
     --time_limit        (default 0)          Limit time for each move in second. If set to 0, then there is no time limit.
     --win_rate_thres    (default 0.0)        If the win rate is lower than that, resign.
     --use_pondering                          Whether we use pondering
-    --exec              (default "")         Whether we run an initial script 
+    --exec              (default "")         Whether we run an initial script
     --setup_board       (default "")         Setup board. The argument is "sgfname moveto"
     --dynkomi_factor    (default 0.0)        Use dynkomi_factor
     --num_playout_per_rollout (default 1)    Number of playouts per rollouts.
     --single_move_return                     Use single move return (When we only have one choice, return the move immediately)
-    --expand_search_endgame                  Whether we expand the search in end game. 
+    --expand_search_endgame                  Whether we expand the search in end game.
     --default_policy    (default "v2")       The default policy used. Could be "simple", "v2".
     --default_policy_pattern_file (default "../models/playout-model.bin") The patter file
     --default_policy_temperature  (default 0.125)   The temperature we use for sampling.
@@ -67,6 +67,7 @@ local opt = pl.lapp[[
     --sample_topn                    (default -1)     If use v2, topn we should sample..
     --rule                           (default cn)     Use JP rule : jp, use CN rule: cn
     --heuristic_tm_total_time        (default 0)      Time for heuristic tm (0 mean you don't use it).
+    --min_rollout_peekable           (default 20000)  The command peek will return if the minimal number of rollouts exceed this threshold
     --save_sgf_per_move                               If so, then we save sgf file for each move
     --use_formal_params                               If so, then use formal parameters
 ]]
@@ -113,7 +114,7 @@ local function load_params_for_formal_game()
     opt.save_sgf_per_move = true
 end
 
-if opt.use_formal_params then 
+if opt.use_formal_params then
     load_params_for_formal_game()
 end
 
@@ -159,8 +160,8 @@ local function set_playout_params_from_opt()
 
     playoutv2.tree_params.num_tree_thread = opt.num_tree_thread
     playoutv2.tree_params.rcv_acc_percent_thres = opt.acc_prob_thres * 100.0
-    playoutv2.tree_params.rcv_max_num_move = opt.max_num_move 
-    playoutv2.tree_params.rcv_min_num_move = opt.min_num_move 
+    playoutv2.tree_params.rcv_max_num_move = opt.max_num_move
+    playoutv2.tree_params.rcv_min_num_move = opt.min_num_move
     playoutv2.tree_params.decision_mixture_ratio = opt.decision_mixture_ratio
     playoutv2.tree_params.single_move_return = opt.single_move_return and common.TRUE or common.FALSE
 
@@ -177,7 +178,7 @@ local function set_playout_params_from_opt()
     playoutv2.tree_params.percent_playout_in_expansion = opt.percent_playout_in_expansion
 
     playoutv2.tree_params.default_policy_sample_topn = opt.sample_topn
-    playoutv2.tree_params.default_policy_temperature = opt.default_policy_temperature 
+    playoutv2.tree_params.default_policy_temperature = opt.default_policy_temperature
     playoutv2.tree_params.use_old_uct = opt.use_old_uct and common.TRUE or common.FALSE
     playoutv2.tree_params.use_sigma_over_n = opt.use_sigma_over_n and common.TRUE or common.FALSE
     playoutv2.tree_params.num_playout_per_rollout = opt.num_playout_per_rollout
@@ -228,8 +229,8 @@ function callbacks.adjust_params_in_game(b, isCanada)
             changed_params = { rcv_max_num_move = 5 }
         end
     end
-    if changed_params then 
-        if playoutv2.set_params(tr, changed_params) then 
+    if changed_params then
+        if playoutv2.set_params(tr, changed_params) then
             playoutv2.print_params(tr)
         end
     end
@@ -241,7 +242,7 @@ end
 
 function callbacks.new_game()
     set_playout_params_from_opt()
- 
+
     if tr then
         playoutv2.restart(tr)
     else
@@ -250,11 +251,11 @@ function callbacks.new_game()
             dcnn_rollout_per_move = (opt.dcnn_rollout == -1 and opt.rollout or opt.dcnn_rollout),
             rollout_per_move = opt.rollout
         }
- 
-        tr = playoutv2.new(rs) 
+
+        tr = playoutv2.new(rs)
     end
     count = 0
-    signature = utils.get_signature() 
+    signature = utils.get_signature()
     io.stderr:write("New MCTS game, signature: " .. signature)
     os.execute("mkdir -p " .. paths.concat(opt.pipe_path, signature))
     playoutv2.print_params(tr)
@@ -278,12 +279,16 @@ function callbacks.move_receiver(x, y, player)
     playoutv2.prune_xy(tr, x, y, player, prefix)
 end
 
+function callbacks.peek_simulation(num_simulation)
+    return playoutv2.set_params(tr, { min_rollout_peekable = num_simulation })
+end
+
 function callbacks.move_peeker(b, player, topk)
     return playoutv2.peek_rollout(tr, topk, b)
 end
 
 function callbacks.undo_func(b, undone_move)
-    if goutils.coord_is_pass(undone_move) then 
+    if goutils.coord_is_pass(undone_move) then
         playoutv2.undo_pass(tr, b)
     else
         playoutv2.set_board(tr, b)
@@ -295,11 +300,11 @@ function callbacks.set_board(b)
 end
 
 function callbacks.thread_switch(arg)
-    if arg == "on" then 
+    if arg == "on" then
         playoutv2.thread_on(tr)
     elseif arg == 'off' then
         playoutv2.thread_off(tr)
-    else 
+    else
         io.stderr:write("Command " .. arg .. " is not recognized!")
     end
 end
@@ -316,12 +321,12 @@ function callbacks.set_verbose_level(verbose_level)
     end
 end
 
-local opt2 = { 
+local opt2 = {
     rule = opt.rule,
-    win_rate_thres = opt.win_rate_thres, 
-    exec = opt.exec, 
-    setup_board = opt.setup_board, 
-    default_policy = opt.default_policy, 
+    win_rate_thres = opt.win_rate_thres,
+    exec = opt.exec,
+    setup_board = opt.setup_board,
+    default_policy = opt.default_policy,
     default_policy_pattern_file = opt.default_policy_pattern_file,
     default_policy_temperature = opt.default_policy_temperature,
     default_policy_sample_topn = opt.sample_topn,

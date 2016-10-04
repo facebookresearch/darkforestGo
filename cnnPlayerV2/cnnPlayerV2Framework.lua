@@ -3,9 +3,9 @@
 -- All rights reserved.
 --
 -- This source code is licensed under the BSD-style license found in the
--- LICENSE file in the root directory of this source tree. An additional grant 
+-- LICENSE file in the root directory of this source tree. An additional grant
 -- of patent rights can be found in the PATENTS file in the same directory.
--- 
+--
 
 local goutils = require 'utils.goutils'
 local utils = require('utils.utils')
@@ -35,11 +35,11 @@ local handicaps = {
     [8] = "*4 D10 Q10 K16 K4",
     [9] = "*8 K10",
     [13] = { "*9 G13 O13 G7 O7", "*9 C3 R3 C17 R17" },
-} 
+}
 
 local disable_time_left = false
 
-local function parse_handicap(num_stone, stone_list) 
+local function parse_handicap(num_stone, stone_list)
     local hlist = handicaps[num_stone]
     if type(hlist) == 'table' then
         -- Randomly pick one.
@@ -57,11 +57,11 @@ end
 
 local function verify_player(b, player)
     if player ~= b._next_player then
-        local supposed_player = (b._next_player == common.white and 'W' or 'B') 
-        local curr_player = (player == common.white and 'W' or 'B') 
+        local supposed_player = (b._next_player == common.white and 'W' or 'B')
+        local curr_player = (player == common.white and 'W' or 'B')
         print(string.format("Wrong player! The player is supposed to be %s but actually is %s...", supposed_player, curr_player))
         return false
-    else 
+    else
         return true
     end
 end
@@ -80,7 +80,7 @@ function cnnplayer:time_left(color, num_seconds, num_moves)
     if self.mycolor and thiscolor == self.mycolor and num_seconds and num_moves then
         io.stderr:write(string.format("timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
         if self.cbs.on_time_left then
-            if not disable_time_left then 
+            if not disable_time_left then
                 self.cbs.on_time_left(tonumber(num_seconds), tonumber(num_moves))
             else
                 print("Time left was disabled")
@@ -111,7 +111,7 @@ end
 function cnnplayer:save_sgf(filename)
     -- Save the current history to sgf.
     local f = io.open(filename, "w")
-    if not f then 
+    if not f then
         return false, "file " .. filename .. " cannot be opened"
     end
     local header = {
@@ -125,10 +125,10 @@ function cnnplayer:save_sgf(filename)
     return true
 end
 
-function cnnplayer:boardsize(board_size) 
+function cnnplayer:boardsize(board_size)
     if board_size == nil then return false end
     local s = tonumber(board_size)
-    if s ~= board.get_board_size(b) then 
+    if s ~= board.get_board_size(b) then
         error(string.format("Board size %d is not supported!", s))
     end
     return true
@@ -176,10 +176,10 @@ function cnnplayer:default_policy(max_depth, verbose)
     return true
 end
 
-function cnnplayer:clear_board() 
+function cnnplayer:clear_board()
     -- To prevent additional overhead for clear_board twice.
     if not self.board_history or #self.board_history > 0 or self.b._ply > 1 then
-        board.clear(self.b) 
+        board.clear(self.b)
         self.board_initialized = true
         self.board_history = { }
         self.sgf_history = { }
@@ -206,22 +206,22 @@ function cnnplayer:show_board_history()
     end
     print("Current board: ")
     board.show_fancy(self.b, "all_rows_cols")
-    return true, "Total board history: " .. #self.board_history 
+    return true, "Total board history: " .. #self.board_history
 end
 
 function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
-    donnot_flip_vertical = donnot_flip_vertical or false 
+    donnot_flip_vertical = donnot_flip_vertical or false
     self:clear_board()
     -- Load the sgf file and play until till_move
     io.stderr:write("Loading " .. filename .. " board flip: " .. donnot_flip_vertical)
     local content = io.open(filename)
-    if content == nil then 
-        return false, "File " .. filename .. " cannot be loaded" 
+    if content == nil then
+        return false, "File " .. filename .. " cannot be loaded"
     end
     local game = assert(sgfloader.parse(content:read("*a")))
     goutils.apply_handicaps(self.b, game, true)
     -- If HA != 0, then we need to apply more handicap
-    self.val_handi = game:get_handi_count() 
+    self.val_handi = game:get_handi_count()
     -- Setup komi count.
     self.val_komi = game:get_komi() or 6.5
     if self.cbs.set_komi then
@@ -230,7 +230,7 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
 
     till_move = till_move ~= nil and tonumber(till_move)
     local moves = { }
-    game:play(function (move, counter) 
+    game:play(function (move, counter)
         -- Vertically flip it so that sgf in KGS looks the same as the one show in terminal.
         local x, y, player = sgfloader.parse_move(move, true, donnot_flip_vertical)
 
@@ -274,7 +274,7 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
 
     -- Save the current game.
     self.game = game
-    self.sgf_history = moves 
+    self.sgf_history = moves
     board.show_fancy(self.b, "all_rows_cols")
     return true
 end
@@ -285,7 +285,7 @@ function cnnplayer:extract_win_rate(filename, run_from, run_to, save_to)
     filename = filename or "*"
 
     local f = io.open(save_to, "w")
-    if f == nil then 
+    if f == nil then
         print("open file " .. save_to .. " error!")
         return false
     end
@@ -294,7 +294,7 @@ function cnnplayer:extract_win_rate(filename, run_from, run_to, save_to)
 
     -- require 'fb.debugger'.enter()
 
-    -- Setup the board. 
+    -- Setup the board.
     if filename ~= '*' then
         self:setup_board(filename, tonumber(run_from), false)
     elseif not self.game then
@@ -302,17 +302,17 @@ function cnnplayer:extract_win_rate(filename, run_from, run_to, save_to)
     end
 
     -- Actually run the game
-    self.game:play(function (move, counter) 
+    self.game:play(function (move, counter)
         local x, y, player = sgfloader.parse_move(move, false, true)
         local c, player_str = goutils.compose_move_gtp(x, y, player)
 
         if x and y and player then
-            local res, suggest_move, win_rate = self:genmove(player_str) 
+            local res, suggest_move, win_rate = self:genmove(player_str)
             if suggest_move ~= c then
                 self:undo()
                 self:play(player_str, c, false)
             end
-            local print_str = string.format("[%d] Suggest: %s %s, Winrate: %f\nActual move: %s %s", 
+            local print_str = string.format("[%d] Suggest: %s %s, Winrate: %f\nActual move: %s %s",
                                             self.b._ply - 1, player_str, suggest_move, win_rate, player_str, c)
             io.stderr:write(print_str)
             f:write(print_str .. "\n")
@@ -325,7 +325,7 @@ function cnnplayer:extract_win_rate(filename, run_from, run_to, save_to)
     return true
 end
 
-function cnnplayer:run_cmds(filename, run_to) 
+function cnnplayer:run_cmds(filename, run_to)
     -- Run the command sequence.
     local lines = pl.utils.readlines(filename)
     for i, line in ipairs(lines) do
@@ -335,14 +335,14 @@ function cnnplayer:run_cmds(filename, run_to)
         local ret, quit = self:getCommands(line, "io")
         io.stderr:write(ret)
         io.flush()
-        if quit then 
-            return true, "", true 
+        if quit then
+            return true, "", true
         end
     end
     return true
 end
 
-function cnnplayer:komi(komi_val) 
+function cnnplayer:komi(komi_val)
     self.val_komi = tonumber(komi_val)
     if self.cbs.set_komi then
         self.cbs.set_komi(komi_val + self.val_handi)
@@ -372,12 +372,25 @@ function cnnplayer:set_direct_handicap(handi_moves, isGive)
     end
 end
 
+function cnnplayer:peek_simulation(num_simulations)
+    -- Set the number of simulations for peek command.
+    if num_simulations == nil or tonumber(num_simulations) == nil then
+        return false, "Invalid number of simulations " .. num_simulations
+    end
+    if self.cbs.peek_simulation then
+        self.cbs.peek_simulation(tonumber(num_simulations))
+        return true, num_simulations
+    else
+        return false, "The function cbs.peek_simulation not set"
+    end
+end
+
 function cnnplayer:place_free_handicap(num_stones)
     num_stones = tonumber(num_stones)
-    if num_stones == nil then 
-        return false, "invalid argument" 
+    if num_stones == nil then
+        return false, "invalid argument"
     end
-    if handicaps[num_stones] == nil then 
+    if handicaps[num_stones] == nil then
         return false, "invalid handicap, #stone = " .. num_stones
     end
     if #self.board_history > 0 then
@@ -385,7 +398,7 @@ function cnnplayer:place_free_handicap(num_stones)
     end
     -- Parse handicap and place all stones.
     local hlist = { }
-    parse_handicap(num_stones, hlist) 
+    parse_handicap(num_stones, hlist)
     -- Set handicap to the board. It is always black stone.
     local moves = { }
     local handi_cnt = 0
@@ -407,7 +420,7 @@ function cnnplayer:set_free_handicap(...)
     if #self.board_history > 0 then
         return false, "board is not empty!"
     end
- 
+
     --shuffle_list(hlist)
     local handi_count = 0
     local moves = { }
@@ -424,12 +437,12 @@ function cnnplayer:set_free_handicap(...)
     return true
 end
 
-function cnnplayer:attention(left_top, right_bottom) 
+function cnnplayer:attention(left_top, right_bottom)
     -- Set attention for the player.
     if self.cbs.set_attention then
         local x_left, x_right, y_top, y_bottom
         local p = 'B'
-        if left_top ~= nil then 
+        if left_top ~= nil then
             x_left, y_top, player = goutils.parse_move_gtp(left_top, p)
         else
             x_left, y_top = 1, 1
@@ -440,7 +453,7 @@ function cnnplayer:attention(left_top, right_bottom)
             x_right, y_bottom = common.board_size, common.board_size
         end
         if x_left > x_right then x_left, x_right = x_right, x_left end
-        if y_top > y_bottom then y_top, y_bottom = y_bottom, y_top end 
+        if y_top > y_bottom then y_top, y_bottom = y_bottom, y_top end
 
         -- io.stderr:write(string.format("Attention = [%d, %d, %d, %d]", x_left, y_top, x_right, y_bottom))
         self.cbs.set_attention(x_left, y_top, x_right, y_bottom)
@@ -450,19 +463,19 @@ end
 
 function cnnplayer:undo()
     -- Simple undo command.
-    if not self.board_history or #self.board_history == 0 then 
-        return true, "Nothing to undo" 
+    if not self.board_history or #self.board_history == 0 then
+        return true, "Nothing to undo"
     end
     -- Set the board.
     local undone_move = self.b._last_move
-    self.b = table.remove(self.board_history) 
+    self.b = table.remove(self.board_history)
     -- Notify the callback if there is any
     if self.cbs.undo_func then
         self.cbs.undo_func(self.b, undone_move)
     end
     local x, y, player = self:undo_sgf_history()
     local move_str, player_str = goutils.compose_move_gtp(x, y, player)
-    io.stderr:write(string.format("undo move: %s %s, now ply: %d", player_str, move_str, self.b._ply)) 
+    io.stderr:write(string.format("undo move: %s %s, now ply: %d", player_str, move_str, self.b._ply))
     board.show_fancy(self.b, 'all_rows_cols')
     return true
 end
@@ -490,7 +503,7 @@ function cnnplayer:play(p, coord, show_board)
         board.show_fancy(self.b, "all_rows_cols")
     end
 
-    if self.cbs.move_receiver then 
+    if self.cbs.move_receiver then
         self.cbs.move_receiver(x, y, player)
     end
 
@@ -509,19 +522,19 @@ function cnnplayer:score(show_more)
         return false, "komi or handi is not set!"
     end
     -- Computing final score could be cpu hungry, so we need to stop computation if possible
-    if self.cbs.thread_switch then 
+    if self.cbs.thread_switch then
         self.cbs.thread_switch("off")
     end
-        
+
     local score, livedead, territory, scores = om.util_compute_final_score(
-           self.ownermap, self.b, self.val_komi + self.val_handi, nil, 
+           self.ownermap, self.b, self.val_komi + self.val_handi, nil,
            function (b, max_depth) return self.dp.run(self.def_policy, b, max_depth, false) end
     )
- 
-    local min_score = scores:min() 
+
+    local min_score = scores:min()
     local max_score = scores:max()
     local stones = om.get_territorylist(territory)
- 
+
     io.stderr:write(string.format("Score (%s): %f, Playout min: %f, Playout max: %f, #dame: %d", self.opt.default_policy, score, min_score, max_score, #stones.dames));
     if show_more then
         -- Show the deadstone.
@@ -543,7 +556,7 @@ function cnnplayer:score(show_more)
     return true, tostring(score), false, { score = score, min_score = min_score, max_score = max_score, num_dame = #stones.dames, livedead = livedead }
 end
 
--- Check candidate pattern move. 
+-- Check candidate pattern move.
 function cnnplayer:pattern_next(max_heap_size)
     max_heap_size = max_heap_size or 10
     -- Call
@@ -564,12 +577,12 @@ function cnnplayer:p(coord)
     return self:play(player, coord, true)
 end
 
-function cnnplayer:genmove(player) 
+function cnnplayer:genmove(player)
     local t_start = common.wallclock()
-    if not self.board_initialized then 
-        return false, "Board should be initialized!!" 
+    if not self.board_initialized then
+        return false, "Board should be initialized!!"
     end
-    if player == nil then 
+    if player == nil then
         return false, "Player should not be null"
     end
     player = (player:lower() == 'w' or player:lower() == 'white') and common.white or common.black
@@ -581,7 +594,7 @@ function cnnplayer:genmove(player)
     end
     -- Save the history.
     table.insert(self.board_history, board.copyfrom(self.b))
- 
+
     -- Do not pass until after 140 ply.
     -- After that, if enemy pass then we pass.
     if self.b._ply >= 140 and goutils.coord_is_pass(self.b._last_move) then
@@ -614,7 +627,7 @@ function cnnplayer:genmove(player)
             end
         end
     end
- 
+
     -- Call move predictor to get the move.
     io.stderr:write("Start genmove. signature: " .. utils.get_signature())
     local xf, yf, win_rate = self.cbs.move_predictor(self.b, player)
@@ -638,21 +651,21 @@ function cnnplayer:genmove(player)
         error("Illegal move from move_predictor! move: " .. move)
     end
 
-    -- Show the current board 
+    -- Show the current board
     board.show_fancy(self.b, 'all_rows_cols')
     io.stderr:write("Time spent in genmove " .. self.b._ply .. " : " ..  common.wallclock() - t_start)
     self:add_to_sgf_history(xf, yf, player)
 
     -- Keep this win rate.
     self.win_rate = win_rate
-    
+
     -- Tell the GTP server we have chosen this move
     return true, move, win_rate
 end
 
 function cnnplayer:peek(topk)
-    topk = not topk and 3 or tonumber(topk) 
-    if not self.cbs.move_peeker then 
+    topk = not topk and 3 or tonumber(topk)
+    if not self.cbs.move_peeker then
         return false, "Unsupported command: peek " .. topk
     end
     local moves = self.cbs.move_peeker(self.b, self.b._next_player, topk)
@@ -662,14 +675,14 @@ function cnnplayer:peek(topk)
         local move = goutils.compose_move_gtp(m.x, m.y)
         s = s .. string.format("%s %f %f; ", move, m.n, m.win_rate)
     end
-    return true, s  
+    return true, s
 end
 
-function cnnplayer:winrate() 
+function cnnplayer:winrate()
     return true, self.win_rate and string.format("%.4f", self.win_rate) or "unknown"
 end
 
-function cnnplayer:name() 
+function cnnplayer:name()
     return true, self.name
 end
 
@@ -680,8 +693,8 @@ end
 function cnnplayer:final_score()
     local res, _, _, stats = self:score()
 
-    if not res then 
-        return false, "error in computing score" 
+    if not res then
+        return false, "error in computing score"
     end
     local score = stats.score
 
@@ -705,35 +718,35 @@ function cnnplayer:final_status_list(subcommand)
         local stones = om.get_deadlist(stats.livedead)
 
         -- io.stderr:write("Return the string")
-        -- Return the string for the deadstones. 
+        -- Return the string for the deadstones.
         local s = table.concat(stones.b_str, " ") .. " " .. table.concat(stones.w_str, " ")
-        return true, s 
-    else 
+        return true, s
+    else
         return false
     end
 end
 
 function cnnplayer:tsdebug()
-    return true, "not supported yet" 
+    return true, "not supported yet"
 end
 
 function cnnplayer:protocol_version()
-    return true, "0.1" 
+    return true, "0.1"
 end
 
 function cnnplayer:quit()
     if self.cbs.quit_func then
         self.cbs.quit_func()
     end
-    return true, "Byebye!", true 
+    return true, "Byebye!", true
 end
 
 function cnnplayer:list_commands()
-    return true, self.all_commands_str    
+    return true, self.all_commands_str
 end
 
 function cnnplayer:known_command(c)
-    return true, type(cnnplayer[c]) == 'function' and "true" or "false" 
+    return true, type(cnnplayer[c]) == 'function' and "true" or "false"
 end
 
 function cnnplayer:run(command, ...)
@@ -743,58 +756,58 @@ end
 function cnnplayer:__init(splash, name, version, callbacks, opt)
     self.b, self.board_initialized = board.new(), false
     -- not supporting final_score in this version
-    -- Return format: 
+    -- Return format:
     --     command correct: true/false
-    --     output string: 
+    --     output string:
     --     whether we need to quit the program.
     -- Add list_commands and known_command by simple reflection.
     local exclusion_list = { new = true, mainloop = true, getCommands = true, run = true, set_direct_handicap = true, score = true }
     local all_commands = {}
-    for k, v in pairs(getmetatable(cnnplayer)) do 
+    for k, v in pairs(getmetatable(cnnplayer)) do
         if not exclusion_list[k] and k:sub(1, 1) ~= '_' and type(v) == 'function' then
-            table.insert(all_commands, k) 
+            table.insert(all_commands, k)
         end
     end
     table.insert(all_commands, "kgs-game_over") -- dummy function, will be used to log off from kgs
     self.all_commands_str = table.concat(all_commands, "\n")
 
     -- set callbacks
-    -- possible callback: 
-    -- 1. move_predictor(board, player) 
-    --    call move_predictor when the bot is asked to generate a move. This is mandatory. 
+    -- possible callback:
+    -- 1. move_predictor(board, player)
+    --    call move_predictor when the bot is asked to generate a move. This is mandatory.
     -- 2. move_receiver(x, y, player)
     --    call move_receiver when the bot receives opponent moves.
     -- 3. new_game()
     --    When the client receives the comamnd of clear_board
     -- 4. undo_func(prev_board, undone_move)
-    --    When the client click undo 
+    --    When the client click undo
     -- 5. set_board(new_board)
     --    Called when setup_board/clear_board is invoked
     -- 6. set_komi(komi)
     --    When komi's set.
     -- 7. quit_func()
-    --    When qutting. 
+    --    When qutting.
     -- 8. thread_switch("on" or "off")
     --    Switch on/off the computation process.
     -- 9. set_move_history(moves) moves = { {x1, y1, player1}, {x2, y2, player2} }..
     --    Set the history of the game. Called when setup_board is invoked.
-    --10. set_attention(x_left, y_top, x_right, y_bottom) 
+    --10. set_attention(x_left, y_top, x_right, y_bottom)
     --    Set the attention of the engine (So that the AI will focus on the region more).
     --11. adjust_params_in_game(board_situation)
-    --    Depending on the board situation, change the parameters. 
+    --    Depending on the board situation, change the parameters.
     --12. set_verbose_level(level)
     --    Set the verbose level
     --13. on_time_left(sec, num_move)
     --    On time left.
 
-    local valid_callbacks = { 
-        move_predictor = true, 
+    local valid_callbacks = {
+        move_predictor = true,
         move_receiver = true,
         move_peeker = true,
-        new_game = true, 
-        undo_func = true, 
-        set_board = true, 
-        set_komi = true, 
+        new_game = true,
+        undo_func = true,
+        set_board = true,
+        set_komi = true,
         quit_func = true,
         thread_switch = true,
         set_move_history = true,
@@ -803,6 +816,7 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
         set_verbose_level = true,
         get_value = true,
         on_time_left = true,
+        peek_simulation = true
     }
 
     assert(callbacks)
@@ -825,13 +839,13 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
     self.version = version
     self.ownermap = om.new()
     -- Opt
-    local default_opt = { 
-        win_rate_thres = 0.0, 
-        default_policy = 'v2', 
+    local default_opt = {
+        win_rate_thres = 0.0,
+        default_policy = 'v2',
         default_policy_pattern_file = '../models/playout-model.bin',
-        default_policy_temperature = 0.125, 
+        default_policy_temperature = 0.125,
         default_policy_sample_topn = -1,
-        save_sgf_per_move = false, 
+        save_sgf_per_move = false,
     }
     if opt then
         self.opt = utils.add_if_nonexist(pl.tablex.deepcopy(opt), default_opt)
@@ -841,7 +855,7 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
 
     -- default to chinese rule
     local rule = (opt and opt.rule == "jp") and board.japanese_rule or board.chinese_rule
-    self.rule = opt.rule 
+    self.rule = opt.rule
 
     if self.opt.default_policy == 'v2' then
         self.dp = dp_v2
@@ -852,7 +866,7 @@ function cnnplayer:__init(splash, name, version, callbacks, opt)
         self.def_policy = self.dp.new(rule)
     elseif self.opt.default_policy == 'simple' then
         self.dp = dp_simple
-        -- self.def_policy = self.dp.new_with_params( { opponent_in_danger = false, our_atari = false, nakade = false, pattern = false }) 
+        -- self.def_policy = self.dp.new_with_params( { opponent_in_danger = false, our_atari = false, nakade = false, pattern = false })
         self.def_policy = self.dp.new(rule)
     end
 
@@ -884,8 +898,8 @@ function cnnplayer:mainloop()
 end
 
 function cnnplayer:getCommands(line, mode)
-    if line == nil then 
-        return false 
+    if line == nil then
+        return false
     end
     local content = pl.utils.split(line)
     if #content == 0 then
@@ -908,7 +922,7 @@ function cnnplayer:getCommands(line, mode)
         if outputstr == nil then outputstr = '' end
         ret = string.format("=%s %s\n", cmdid, outputstr)
     else
-        ret = string.format("?%s ???\n", cmdid)
+        ret = string.format("?%s ??? %s\n", cmdid, outputstr)
     end
     if mode == "io" then ret = ret.."\n\n" end
     return ret, quit

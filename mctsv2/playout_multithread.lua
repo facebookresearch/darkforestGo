@@ -3,9 +3,9 @@
 -- All rights reserved.
 --
 -- This source code is licensed under the BSD-style license found in the
--- LICENSE file in the root directory of this source tree. An additional grant 
+-- LICENSE file in the root directory of this source tree. An additional grant
 -- of patent rights can be found in the PATENTS file in the same directory.
--- 
+--
 
 local ffi = require 'ffi'
 local pl = require 'pl.import_into'()
@@ -15,7 +15,7 @@ local goutils = require('utils.goutils')
 local board = require('board.board')
 
 -- local symbols, s = utils.ffi_include(paths.concat(common.lib_path, "mctsv2/playout_multithread.h"))
-local script_path = common.script_path() 
+local script_path = common.script_path()
 local symbols, s = utils.ffi_include(paths.concat(script_path, "playout_multithread.h"))
 local C = ffi.load(paths.concat(script_path, "../libs/libplayout_multithread.so"))
 local playout = {}
@@ -91,11 +91,11 @@ function playout.set_tsumego_mode(tr, b, margin)
 
     board.expand_region(playout.tree_params.ld_region, margin)
     -- Set the board and parameters.
-    -- The order matters. First change the parameters and then set the board (otherwise you see ghost moves). Finally set the move history. 
+    -- The order matters. First change the parameters and then set the board (otherwise you see ghost moves). Finally set the move history.
     C.ts_v2_set_params(tr, nil, playout.tree_params)
     C.ts_v2_setboard(tr, b)
 
-    local moves = board.get_all_stones(b) 
+    local moves = board.get_all_stones(b)
     for i = 1, #moves do
         local m, player = unpack(moves[i])
         C.ts_v2_add_move_history(tr, m, player, common.FALSE)
@@ -123,7 +123,7 @@ local params_changable_on_the_fly = {
 }
 
 local tree_params_changable_on_the_fly = {
-    num_rollout = true, 
+    num_rollout = true,
     num_rollout_per_move = true,
     verbose = true,
     sigma = true,
@@ -133,6 +133,7 @@ local tree_params_changable_on_the_fly = {
     rcv_min_num_move = true,
     use_pondering = true,
     single_move_return = true,
+    min_rollout_peekable = true
 }
 
 function playout.set_params(tr, params)
@@ -140,19 +141,22 @@ function playout.set_params(tr, params)
         if not params_changable_on_the_fly[k] and not tree_params_changable_on_the_fly[k] then return false end
     end
     -- Then we loop things again and actually change the parameters.
-    local any_change = false
+    local any_params_change = false
+    local any_tree_params_change = false
     for k, v in pairs(params) do
-        if params_changable_on_the_fly[k] and playout.params[k] ~= params[k] then 
-            playout.params[k] = params[k]  
-            any_change = true
+        if params_changable_on_the_fly[k] and playout.params[k] ~= params[k] then
+            playout.params[k] = params[k]
+            any_params_change = true
         end
         if tree_params_changable_on_the_fly[k] and playout.tree_params[k] ~= params[k] then
             playout.tree_params[k] = params[k]
-            any_change = true
+            any_tree_params_change = true
         end
     end
-    if any_change then
+    if any_params_change and any_tree_params_change then
         return C.ts_v2_set_params(tr, playout.params, playout.tree_params) == common.TRUE
+    elseif any_tree_params_change then
+        return C.ts_v2_set_params(tr, nil, playout.tree_params) == common.TRUE
     end
 end
 
@@ -218,7 +222,7 @@ function playout.set_time_left(tr, time_left, num_moves)
 end
 
 function playout.prune(tr, m, filename)
-    if filename then 
+    if filename then
         C.ts_v2_thread_off(tr)
         C.ts_v2_tree_to_json(tr, filename)
         C.ts_v2_prune_opponent(tr, m.m)
