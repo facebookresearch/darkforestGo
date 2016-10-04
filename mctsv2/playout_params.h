@@ -200,6 +200,9 @@ typedef struct {
   // Ideally we only want a few node to wait so that they can be the next batch to expand child nodes.
   int percent_playout_in_expansion;
 
+  // Run a few playout and takes their mean. Default is 1, but could be higher.
+  int num_playout_per_rollout;
+
   // Whether we use PUCT and previous UCT
   BOOL use_old_uct;
 } TreeParams;

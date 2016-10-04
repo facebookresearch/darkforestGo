@@ -433,6 +433,7 @@ Move ts_v2_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) 
   // If the best move is self-atari, then we need to double check whether it is valid.
   // In the long turn, we should put M_PASS as one choice in search when the game is about to end.
   // Here the hack will mislead MCTS to output very low winning rate, until we pick PASS and found that we are actually the winner.
+  /*
   if (IsSelfAtari(&s->board, NULL, move.m, player, NULL) && move.win_rate < 0.1) {
     // Then we should change it to M_PASS, since we have nothing to lose.
     PRINT_INFO("MCTS choose a self-atari move [%s] with win rate = %f, Change it to M_PASS!\n", get_move_str(move.m, player, buf), move.win_rate);
@@ -440,6 +441,7 @@ Move ts_v2_pick_best(void *ctx, AllMoves *all_moves, const Board *verify_board) 
     move.x = X(move.m);
     move.y = Y(move.m);
   }
+  */
 
   // Print tree.
   // Show the picked move as comments so that we could analyze it.

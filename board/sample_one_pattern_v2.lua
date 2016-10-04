@@ -77,7 +77,7 @@ local total_num_moves = 0
 local stats = { }
 
 print("Current situation!")
-board.show(b, 'all')
+board.show_fancy(b, 'all')
 
 local summary = pat.init_sample_summary() 
 
@@ -85,7 +85,7 @@ for i = 1, opt.num_games do
     local be = pat.new(pat_h, b)
     local moves
     if opt.num_moves > 0 then
-        moves, this_summary = pat.sample_many(be, opt.num_moves)
+        moves, this_summary = pat.sample_many(be, opt.num_moves, nil, true)
     else
         this_summary = pat.sample_until(be)
     end
@@ -97,7 +97,7 @@ for i = 1, opt.num_games do
     else
         print(string.format("[%d/%d] Score = %f", i, opt.num_games, score))
         pat.print_sample_summary(this_summary)
-        board.show(pat.get_board(be), 'all')
+        board.show_fancy(pat.get_board(be))
         
         -- Save to file
         if opt.save_prefix ~= "" and moves ~= nil then 

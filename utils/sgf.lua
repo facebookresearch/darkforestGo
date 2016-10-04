@@ -485,6 +485,7 @@ end
 -- This works if there is no variations.
 function sgfloader:play(func, num_moves, continue_play)
     if not continue_play and not self:play_start() then return false end
+    if num_moves == 0 then return true end
     local max_ply = self:play_get_maxply()
     -- require 'fb.debugger'.enter()
     local counter = 1
@@ -506,6 +507,8 @@ local function moves2sgf_str(moves, player)
     for i = 1, #moves do
         local m = moves[i]
         local x, y = common.coord2xy(m)
+        -- Flip the coordinate for saving.
+        y = 20 - y
         local player_str, coord_str = sgfloader.compose_move(x, y, player)
         if i == 1 then s = player_str end
         s = s .. "[" .. coord_str .. "]" 
@@ -554,8 +557,9 @@ function sgfloader.sgf_string(header, moves)
                 require 'fb.debugger'.enter()
             end
             s = s .. moves2sgf_str( { m }, player )
-        else
-            for k, v in pairs(moves[i]) do
+        end
+        for k, v in pairs(moves[i]) do
+            if type(k) == 'string' then
                 s = s .. k .. "[" .. v .. "]"
             end
         end

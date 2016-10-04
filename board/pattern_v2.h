@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #ifndef _PATTERN_V2_H_
 #define _PATTERN_V2_H_
@@ -81,6 +81,13 @@ typedef struct {
   int num_moves;
 } AllMovesExt;
 
+typedef char SingleComment[5000];
+
+typedef struct {
+  SingleComment *comments;
+  int num_comments;
+} AllMovesComments;
+
 typedef struct {
   char name[100];
   double sum_loglikelihood;
@@ -146,7 +153,7 @@ BOOL PatternV2PlayMove(void *board_extra, Coord m, Stone player);
 void PatternV2Sample2(void *board_extra, void *context, RandFunc randfunc, GroupId4 *ids, MoveExt *move_ext);
 void PatternV2Sample(void *board_extra, GroupId4 *ids, MoveExt *move_ext);
 void PatternV2SampleTopn(void *be, int n, void *context, RandFunc randfunc, GroupId4 *ids, MoveExt *move_ext);
-void PatternV2SampleMany(void *be, AllMovesExt *all_moves, SampleSummary *summary);
+void PatternV2SampleMany(void *be, AllMovesExt *all_moves, AllMovesComments *all_comments, SampleSummary *summary);
 // Get approximate top n. Return the actual #moves that have been saved.
 // If append_with_random_move is TRUE, then we just fill the rest with random valid moves.
 int PatternV2GetApproxTopn(void *be, int num_moves, Coord *moves, float *confidences, BOOL append_with_random_move);
@@ -160,7 +167,9 @@ void PatternV2SampleUntil(void *be, void *context, RandFunc randfunc, AllMovesEx
 void PatternV2SampleUntilSingleThread(void *be, AllMovesExt *moves, SampleSummary *summary);
 
 AllMovesExt *InitAllMovesExt(int num_moves);
+AllMovesComments *InitAllMovesComments(int num_moves);
 void DestroyAllMovesExt(AllMovesExt *h);
+void DestroyAllMovesComments(AllMovesComments *h);
 
 // New pattern map.
 // Simple hash library.
@@ -203,7 +212,7 @@ const Board *PatternV2GetBoard(void *be);
 void PatternV2PrintStats(void *h);
 void PatternV2BoardExtraPrintStats(void *board_extra);
 BOOL PatternV2BoardExtraCheck(void *board_extra);
-void PatternV2BoardExtraDumpInfo(void *be, int max_heap_size);
+const char *PatternV2BoardExtraDumpInfo(void *be, int max_heap_size);
 
 // Destroy pattern map.
 void DestroyPatternV2(void *h);

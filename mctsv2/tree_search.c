@@ -510,6 +510,7 @@ void tree_search_init_params(TreeParams *params) {
 
   params->num_virtual_games = 0;
   params->percent_playout_in_expansion = 0;
+  params->num_playout_per_rollout = 1;
   params->use_old_uct = FALSE;
 }
 
@@ -532,6 +533,7 @@ void tree_search_print_params(void *ctx) {
   fprintf(stderr,"UCT: %s\n", params->use_old_uct ? "old" : "PUCT");
   fprintf(stderr,"num_rollout: %d\n", params->num_rollout);
   fprintf(stderr,"num_rollout_per_move: %d\n", params->num_rollout_per_move);
+  fprintf(stderr,"num_playout_per_rollout: %d\n", params->num_playout_per_rollout);
   fprintf(stderr,"num_rollout_peekable: %d\n", params->min_rollout_peekable);
   fprintf(stderr,"num_dcnn_per_move: %d\n", params->num_dcnn_per_move);
   fprintf(stderr,"rcv_acc_percent_thres: %d\n", params->rcv_acc_percent_thres);
@@ -567,6 +569,7 @@ static void internal_set_params(TreeHandle *s, const TreeParams *new_params) {
     s->callback_def_policy = NULL;
     s->callback_policy = ld_policy;
     s->callback_expand = (s->params.use_tsumego_dcnn ? tsumego_dcnn_leaf_expansion : tsumego_rule_leaf_expansion);
+    s->callback_compute_score = threaded_compute_score;
     s->callback_backprop = threaded_run_tsumego_bp;
   } else {
     switch(s->params.default_policy_choice) {
@@ -583,6 +586,7 @@ static void internal_set_params(TreeHandle *s, const TreeParams *new_params) {
 
     s->callback_policy = s->params.use_async ? async_policy : cnn_policy;
     s->callback_expand = dcnn_leaf_expansion;
+    s->callback_compute_score = threaded_compute_score;
     s->callback_backprop = threaded_run_bp;
   }
 }
@@ -827,7 +831,7 @@ static void *threaded_expansion(void *ctx) {
   TreePool *p = &s->p;
 
   // Copy a new board. No pointer in board.
-  Board board;
+  Board board, board2;
   GroupId4 ids;
   char buf[30];
   PRINT_DEBUG("Start expansion\n");
@@ -939,12 +943,18 @@ static void *threaded_expansion(void *ctx) {
     // Step 2, playout from current board and curr_player.
     PRINT_DEBUG("Default policy...\n");
     int end_ply = board._ply;
+    float aver_black_moku = 0.0;
     if (s->callback_def_policy != NULL && ! s->params.life_and_death_mode) {
-      s->callback_def_policy(s->def_policy, info, thread_rand, &board, NULL, s->params.max_depth_default_policy, FALSE);
+      for (int i = 0; i < s->params.num_playout_per_rollout; ++i) {
+        CopyBoard(&board2, &board);
+        s->callback_def_policy(s->def_policy, info, thread_rand, &board2, NULL, s->params.max_depth_default_policy, FALSE);
+        aver_black_moku += s->callback_compute_score(info, &board2);
+      }
+      aver_black_moku /= s->params.num_playout_per_rollout;
     }
 
     PRINT_DEBUG("Back propagation ...\n");
-    s->callback_backprop(info, &board, end_ply, board_on_child, child_offset, b);
+    s->callback_backprop(info, aver_black_moku, board._next_player, end_ply, board_on_child, child_offset, b);
 
     // Add the total rollout_count count.
     __sync_fetch_and_add(&s->rollout_count, 1);
@@ -1468,10 +1478,10 @@ void tree_search_print_tree(void *ctx) {
   // print the address b and seq number.
   fprintf(stderr,"b = %lx, seq = %ld\n", (uint64_t)b, s->seq);
   show_picked_move_cnn_impl(s, b, s->board._next_player, 0);
-  fprintf(stderr,"Ply: %d, ld_mode: %s, def_policy: %s [%d, T: %.3lf], Async: %s, CPU_ONLY: %s, online: %s, cnn_final_score: %s, min_ply_use_final: %d, final_mixture_ratio: %.1f\n",
+  fprintf(stderr,"Ply: %d, ld_mode: %s, def_policy: %s [%d, T: %.3lf], Async: %s, CPU_ONLY: %s, online: %s, cnn_final_score: %s, min_ply_use_final: %d, final_mixture_ratio: %.1f, num_playout_per_rollout: %d\n",
       s->board._ply, STR_BOOL(s->params.life_and_death_mode), def_policy_str(s->params.default_policy_choice), s->params.default_policy_sample_topn,
       s->params.default_policy_temperature, STR_BOOL(s->params.use_async), STR_BOOL(s->common_params->cpu_only), STR_BOOL(s->params.use_online_model),
-      STR_BOOL(s->params.use_cnn_final_score), s->params.min_ply_to_use_cnn_final_score, s->params.final_mixture_ratio);
+      STR_BOOL(s->params.use_cnn_final_score), s->params.min_ply_to_use_cnn_final_score, s->params.final_mixture_ratio, s->params.num_playout_per_rollout);
 
   resume_all_threads(s);
 }

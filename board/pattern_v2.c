@@ -1,11 +1,11 @@
-//
+
 // Copyright (c) 2016-present, Facebook, Inc.
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #include "pattern_v2.h"
 #include <stdio.h>
@@ -216,6 +216,19 @@ AllMovesExt *InitAllMovesExt(int num_moves) {
 void DestroyAllMovesExt(AllMovesExt *h) {
   free(h->moves);
   h->num_moves = 0;
+  free(h);
+}
+
+AllMovesComments *InitAllMovesComments(int num_moves) {
+  AllMovesComments *all_moves_c = malloc(sizeof(AllMovesComments));
+  all_moves_c->comments = malloc(num_moves * sizeof(SingleComment));
+  all_moves_c->num_comments = num_moves;
+  return all_moves_c;
+}
+
+void DestroyAllMovesComments(AllMovesComments *h) {
+  free(h->comments);
+  h->num_comments = 0;
   free(h);
 }
 
@@ -503,7 +516,7 @@ typedef struct {
 } BoardExtra;
 
 // --------- Heap related utilities -----------------------
-static void heap_dump_one(const BoardExtra *h, int heap_idx, const char *prefix) {
+static int heap_dump_one_to_buffer(const BoardExtra *h, int heap_idx, const char *prefix, char *buffer) {
   Coord m = h->moves_heap[heap_idx];
   const PatternMove *mv = &h->moves[m];
   char buf[30];
@@ -511,24 +524,41 @@ static void heap_dump_one(const BoardExtra *h, int heap_idx, const char *prefix)
 
   if (prefix == NULL) prefix = "";
 
-  fprintf(stderr,"%s Move %s at %d/%d: logprob: %lf, prior: %lf, raw-prob: %lf, total_prob: %lf, prob: %lf",
+  int len = 0;
+  len += sprintf(buffer + len, "%s Move %s at %d/%d: logprob: %lf, prior: %lf, raw-prob: %lf, total_prob: %lf, prob: %lf",
       prefix, move_str, heap_idx, h->heap_size, mv->logprob, mv->prior, mv->prob, h->total_prob, mv->prob / h->total_prob);
   if (heap_idx != mv->heap_idx) {
-    fprintf(stderr,", heap_idx from moves: %d", mv->heap_idx);
+    len += sprintf(buffer + len, ", heap_idx from moves: %d", mv->heap_idx);
   }
-  fprintf(stderr,"\n");
+  len += sprintf(buffer + len, "\n");
+  return len;
 }
 
-static void heap_dump(const BoardExtra *h, int heap_size) {
+static int heap_dump_to_buffer(const BoardExtra *h, int heap_size, char *buffer) {
   if (heap_size == -1) heap_size = h->heap_size;
   else if (heap_size > h->heap_size) heap_size = h->heap_size;
   char buf[30];
-  fprintf(stderr,"--- HeapDump:\n");
-  fprintf(stderr,"heap_size: %d\n", h->heap_size);
+  int len = 0;
+  len += sprintf(buffer + len, "--- HeapDump:\n");
+  len += sprintf(buffer + len, "heap_size: %d, last_move: %s, ", h->heap_size, get_move_str(h->board._last_move, OPPONENT(h->board._next_player), buf));
+  len += sprintf(buffer + len, "last_move_2: %s\n", get_move_str(h->board._last_move2, h->board._next_player, buf));
   for (int i = 1; i < heap_size; ++i) {
-    heap_dump_one(h, i, NULL);
+    len += heap_dump_one_to_buffer(h, i, NULL, buffer + len);
   }
-  fprintf(stderr,"--- End HeapDump\n");
+  len += sprintf(buffer + len, "--- End HeapDump\n");
+  return len;
+}
+
+static void heap_dump_one(const BoardExtra *h, int heap_idx, const char *prefix) {
+  char buffer[5000];
+  heap_dump_one_to_buffer(h, heap_idx, prefix, buffer);
+  fprintf(stderr, buffer);
+}
+
+static void heap_dump(const BoardExtra *h, int heap_size) {
+  char buffer[5000];
+  heap_dump_to_buffer(h, heap_size, buffer);
+  fprintf(stderr, buffer);
 }
 
 #define HEAP_DUMP(prefix, h, heap_idx) do { if (h->h->params.verbose >= PV_DEBUG) { heap_dump_one(h, heap_idx, prefix); fflush(stdout); } } while(0)
@@ -2225,7 +2255,7 @@ static unsigned int local_fast_random(void *context, unsigned int num_max) {
 }
 */
 
-void PatternV2SampleMany(void *be, AllMovesExt *all_moves, SampleSummary *summary) {
+void PatternV2SampleMany(void *be, AllMovesExt *all_moves, AllMovesComments *comments, SampleSummary *summary) {
   if (be == NULL) { fprintf(stderr,"be cannot be NULL!"); error(""); }
   if (all_moves == NULL) { fprintf(stderr,"all_moves cannot be NULL!"); error(""); }
 
@@ -2238,6 +2268,10 @@ void PatternV2SampleMany(void *be, AllMovesExt *all_moves, SampleSummary *summar
   char buf[30];
 
   double start = wallclock();
+
+  const int max_heap_dumped = 10;
+
+  if (comments != NULL) assert(comments->num_comments == all_moves->num_comments);
 
   int i = 0;
   for (i = 0; i < all_moves->num_moves; ++i) {
@@ -2253,6 +2287,10 @@ void PatternV2SampleMany(void *be, AllMovesExt *all_moves, SampleSummary *summar
     }
 
     PatternV2PlayMove2(be, &ids);
+
+    if (comments != NULL) {
+      strcpy(comments->comments[i], PatternV2BoardExtraDumpInfo(be, max_heap_dumped));
+    }
 
     if (IsGameEnd(&board_extra->board)) break;
 
@@ -2732,31 +2770,36 @@ int PatternV2GetTopn(void *be, int n, Coord *moves, float *confidences, BOOL fil
   return counter;
 }
 
-void PatternV2BoardExtraDumpInfo(void *be, int max_heap_dumped) {
+const char *PatternV2BoardExtraDumpInfo(void *be, int max_heap_dumped) {
   BoardExtra *board_extra = (BoardExtra *)be;
   const Handle *h = board_extra->h;
 
   add_all_priors(board_extra);
 
-  heap_dump(board_extra, max_heap_dumped);
-
   // Dump information for prior moves.
+  static char all_info[5000];
+  all_info[0] = 0;
+  int len = 0;
+
+  len += heap_dump_to_buffer(be, max_heap_dumped, all_info);
+
   char buf[30];
-  fprintf(stderr,"----- Prior moves: #moves = %d--------\n", board_extra->num_prior_moves);
+  len += sprintf(all_info + len, "----- Prior moves: #moves = %d--------\n", board_extra->num_prior_moves);
   for (int i = 0; i < board_extra->num_prior_moves; ++i) {
     const PriorMove *pmv = &board_extra->prior_moves[i];
     get_move_str(pmv->m, board_extra->board._next_player, buf);
 
     if (pmv->w_type == WT_RESP) {
-      fprintf(stderr,"[%d]: %s, type RESP, w_offset: %d, prior: %lf\n", i, buf, pmv->w_offset, pmv->prior);
+      len += sprintf(all_info + len, "%d: %s, type RESP, w_offset: %d, prior: %lf\n", i, buf, pmv->w_offset, pmv->prior);
     } else {
       const int type_idx = h->prior_type[pmv->w_offset];
-      fprintf(stderr,"[%d]: %s, type %s, offset: %d, prior: %lf\n", i, buf, g_priors[type_idx].prior_name, pmv->w_offset - h->prior_offset[type_idx], pmv->prior);
+      len += sprintf(all_info + len, "%d: %s, type %s, offset: %d, prior: %lf\n", i, buf, g_priors[type_idx].prior_name, pmv->w_offset - h->prior_offset[type_idx], pmv->prior);
     }
   }
-  fprintf(stderr,"----- End Prior moves --------\n");
+  len += sprintf(all_info + len, "----- End Prior moves --------\n");
 
   remove_all_priors(board_extra);
+  return all_info;
 }
 
 // When the weights are updated, all the logprob in the heap should be updated as well.

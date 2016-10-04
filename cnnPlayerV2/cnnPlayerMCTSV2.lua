@@ -47,6 +47,7 @@ local opt = pl.lapp[[
     --exec              (default "")         Whether we run an initial script 
     --setup_board       (default "")         Setup board. The argument is "sgfname moveto"
     --dynkomi_factor    (default 0.0)        Use dynkomi_factor
+    --num_playout_per_rollout (default 1)    Number of playouts per rollouts.
     --single_move_return                     Use single move return (When we only have one choice, return the move immediately)
     --expand_search_endgame                  Whether we expand the search in end game. 
     --default_policy    (default "v2")       The default policy used. Could be "simple", "v2".
@@ -108,6 +109,7 @@ local function load_params_for_formal_game()
     opt.expand_n_thres = 0 --              (default 0)      Statistics collected before expand.
     opt.sample_topn = -1 --                   (default -1)     If use v2, topn we should sample..
     opt.rule = "jp"  --             (default cn)         Use JP rule : jp, use CN rule: cn
+    opt.num_playout_per_rollout = 1
     opt.save_sgf_per_move = true
 end
 
@@ -178,6 +180,7 @@ local function set_playout_params_from_opt()
     playoutv2.tree_params.default_policy_temperature = opt.default_policy_temperature 
     playoutv2.tree_params.use_old_uct = opt.use_old_uct and common.TRUE or common.FALSE
     playoutv2.tree_params.use_sigma_over_n = opt.use_sigma_over_n and common.TRUE or common.FALSE
+    playoutv2.tree_params.num_playout_per_rollout = opt.num_playout_per_rollout
 end
 
 local tr

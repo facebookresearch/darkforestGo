@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #ifndef _TREE_SEARCH_INTERNAL_H_
 #define _TREE_SEARCH_INTERNAL_H_
@@ -62,9 +62,10 @@ typedef struct {
 
 // Some callback functions.
 typedef DefPolicyMove (* func_def_policy)(void *def_policy, void *context, RandFunc rand_func, Board* board, const Region *r, int max_depth, BOOL verbose);
+typedef float (* func_compute_score)(ThreadInfo *info, const Board *board);
 // When board_on_child is false, then the bl is at the same situation as board.
 // When board_on_child is true, then board points to the child that has been played on the board, and child_offset is that child's offset.
-typedef void (* func_back_prop)(ThreadInfo *info, const Board *board, int end_ply, BOOL board_on_child, BlockOffset child_offset, TreeBlock *bl);
+typedef void (* func_back_prop)(ThreadInfo *info, float black_moku, Stone next_player, int end_ply, BOOL board_on_child, BlockOffset child_offset, TreeBlock *bl);
 typedef BOOL (* func_policy)(ThreadInfo *info, TreeBlock *bl, const Board *board, BlockOffset *offset, TreeBlock **child_chosen);
 typedef BOOL (* func_expand)(ThreadInfo *info, const Board *board, TreeBlock *b);
 
@@ -128,6 +129,7 @@ typedef struct __TreeHandle {
 
   // Callbacks.
   func_def_policy callback_def_policy;
+  func_compute_score callback_compute_score;
   func_back_prop callback_backprop;
   func_policy callback_policy;
   func_expand callback_expand;

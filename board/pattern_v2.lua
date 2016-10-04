@@ -13,6 +13,7 @@ local utils = require('utils.utils')
 local common = require("common.common")
 local board = require("board.board")
 local sgf = require('utils.sgf')
+local goutils = require('utils.goutils')
 
 -- local symbols, s = utils.ffi_include(paths.concat(common.lib_path, "board/board.h"))
 local script_path = common.script_path()
@@ -130,13 +131,15 @@ function pat.destroy_grads(grads)
     C.PatternV2DestroyGradients(grads)
 end
 
-function pat.sample_many(be, num_moves, summary)
+function pat.sample_many(be, num_moves, summary, output_comment)
     local all_moves = C.InitAllMovesExt(num_moves)
+    local all_comments
+    if output_comment then all_comments = C.InitAllMovesComments(num_moves) end
 
     summary = summary or pat.init_sample_summary() 
 
     local start = common.wallclock()
-    C.PatternV2SampleMany(be, all_moves, summary)
+    C.PatternV2SampleMany(be, all_moves, all_comments, summary)
     local duration = common.wallclock() - start
 
     -- print(string.format("Sample done, collect moves: #moves = %d", C.AME_NumMoves(all_moves)))
@@ -145,16 +148,25 @@ function pat.sample_many(be, num_moves, summary)
     for i = 1, num_moves do
         local move = { }
         local mm = all_moves.moves[i - 1]
-        local comment = string.format("topn: %d, prob: %f, counter: %d, type: %s, heap_size: %d, total_prob: %f", mm.topn, mm.prob, mm.counter, pat.type_strs[mm.type], mm.heap_size, mm.total_prob)
+        move[1] = mm.m
+        move[2] = mm.player
 
         local x, y = common.coord2xy(mm.m)
         local player_str, coord_str = sgf.compose_move(x, y, mm.player)
-        move[player_str] = coord_str
+        -- move[player_str] = coord_str
+        local coord_str2, player_str2 = goutils.compose_move_gtp(x, y, mm.player)
+
+        local comment = string.format("move: %s(%s), topn: %d, prob: %f, counter: %d, type: %s, heap_size: %d, total_prob: %f", 
+            coord_str2, player_str2, mm.topn, mm.prob, mm.counter, pat.type_strs[mm.type], mm.heap_size, mm.total_prob)
+        if output_comment then
+            comment = comment .. "\n" .. ffi.string(all_comments.comments[i - 1])
+        end
         move['C'] = comment
 
         table.insert(res, move)
     end
     C.DestroyAllMovesExt(all_moves)
+    if all_comments then C.DestroyAllMovesComments(all_comments) end
     return res, summary, duration
 end
 
@@ -261,7 +273,7 @@ function pat.run(pat_h, b, max_depth, verbose)
 end
 
 function pat.dump_status(be, max_heap_size)
-    C.PatternV2BoardExtraDumpInfo(be, max_heap_size)
+    return ffi.string(C.PatternV2BoardExtraDumpInfo(be, max_heap_size))
 end
 
 function pat.destroy(pat_h)

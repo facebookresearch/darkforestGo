@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #include <math.h>
 #include "playout_callbacks.h"
@@ -494,8 +494,7 @@ static void update_online_model(ThreadInfo *info, Stone player, TreeBlock *b) {
   pthread_mutex_unlock(&s->mutex_online_model);
 }
 
-// =============================================== Back propagation.
-void threaded_run_bp(ThreadInfo *info, const Board *board, int end_ply, BOOL board_on_child, BlockOffset child_offset, TreeBlock *b) {
+float threaded_compute_score(ThreadInfo *info, const Board *board) {
   TreeHandle *s = info->s;
   TreePool *p = &s->p;
 
@@ -529,21 +528,30 @@ void threaded_run_bp(ThreadInfo *info, const Board *board, int end_ply, BOOL boa
     }
   }*/
 
-  float komi = s->common_params->komi + s->common_variants->dynkomi;
-  int rule = s->common_params->rule;
   if (win_state == S_EMPTY) {
-    // Dynkomi is adjusted if the win rate is too high.
-    float black_count_playout = sigmoid((float)GetFastScore(board, rule) - komi);
-
-    if (b->has_score && s->params.use_cnn_final_score && end_ply >= s->params.min_ply_to_use_cnn_final_score) {
-      // Final score = final_mixture_ratio * win_rate_prediction + (1.0 - final_mixture_ratio) * playout_result.
-      float cnn_final_playout = sigmoid(b->score - komi);
-      black_count = s->params.final_mixture_ratio * cnn_final_playout + (1 - s->params.final_mixture_ratio) * black_count_playout;
-    } else {
-      black_count = black_count_playout;
-    }
+    return (float)GetFastScore(board, s->common_params->rule);
   } else {
-    black_count = (win_state == S_BLACK ? 1 : 0);
+    return (win_state == S_BLACK ? 10 : -10);
+  }
+}
+
+// =============================================== Back propagation.
+void threaded_run_bp(ThreadInfo *info, float black_moku, Stone next_player, int end_ply, BOOL board_on_child, BlockOffset child_offset, TreeBlock *b) {
+  TreeHandle *s = info->s;
+  TreePool *p = &s->p;
+
+  // Dynkomi is adjusted if the win rate is too high.
+  float komi = s->common_params->komi + s->common_variants->dynkomi;
+  float black_count_playout = sigmoid(black_moku - komi);
+  float black_count;
+
+  // If there is network that predicts moku, then we should combine the results.
+  if (b->has_score && s->params.use_cnn_final_score && end_ply >= s->params.min_ply_to_use_cnn_final_score) {
+    // Final score = final_mixture_ratio * win_rate_prediction + (1.0 - final_mixture_ratio) * playout_result.
+    float cnn_final_playout = sigmoid(b->score - komi);
+    black_count = s->params.final_mixture_ratio * cnn_final_playout + (1 - s->params.final_mixture_ratio) * black_count_playout;
+  } else {
+    black_count = black_count_playout;
   }
 
   // Rave moves encoded in the board.
@@ -595,12 +603,12 @@ void threaded_run_bp(ThreadInfo *info, const Board *board, int end_ply, BOOL boa
 
   if (s->params.use_online_model) {
     // Update the online model.
-    Stone player = board_on_child ? OPPONENT(board->_next_player) : board->_next_player;
+    Stone player = (board_on_child ? OPPONENT(next_player) : next_player);
     update_online_model(info, player, b);
   }
 }
 
-static void update_pn(ThreadInfo *info, const Board *board, BOOL board_on_child, Stone player, TreeBlock *bl) {
+static void update_pn(ThreadInfo *info, BOOL board_on_child, Stone player, TreeBlock *bl) {
   // End state. Either it's state is fixed, or it is not determined (in thie case prior will just work).
   if (bl->n == 0) return;
 
@@ -625,6 +633,7 @@ static void update_pn(ThreadInfo *info, const Board *board, BOOL board_on_child,
     w = 0;
     // Can we do it in O(1)?
     for (int i = 0; i < bl->n; ++i) {
+      // Note that ps[i].b, and ps[i].w have been computed in tsumego_setup_if_closed.
       int this_b = __atomic_load_n(&bl->cnn_data.ps[i].b, __ATOMIC_ACQUIRE);
       int this_w = __atomic_load_n(&bl->cnn_data.ps[i].w, __ATOMIC_ACQUIRE);
 
@@ -671,26 +680,26 @@ static void update_pn(ThreadInfo *info, const Board *board, BOOL board_on_child,
   __sync_fetch_and_add(&parent->data.stats[bl->parent_offset].total, 1);
 }
 
-void threaded_run_tsumego_bp(ThreadInfo *info, const Board *board, int end_ply, BOOL board_on_child, BlockOffset child_offset, TreeBlock *b) {
+void threaded_run_tsumego_bp(ThreadInfo *info, float black_moku, Stone next_player, int end_ply, BOOL board_on_child, BlockOffset child_offset, TreeBlock *b) {
   // In tsumego, there is no playout policy, and we just evaluate the curent board situation and backprop.
   TreeHandle *s = info->s;
   TreePool *p = &s->p;
 
   TreeBlock *curr = b;
-  Stone player = board->_next_player;
+  Stone player = next_player;
   // If the board is pointing to the child, we need to switch the current player.
   if (board_on_child) player = OPPONENT(player);
 
   // Backpropagation.
   while (curr->parent != NULL) {
-    update_pn(info, board, board_on_child, player, curr);
+    update_pn(info, board_on_child, player, curr);
     curr = curr->parent;
     player = OPPONENT(player);
   }
 
   if (s->params.use_online_model) {
     // Update the online model.
-    player = board_on_child ? OPPONENT(board->_next_player) : board->_next_player;
+    player = board_on_child ? OPPONENT(next_player) : next_player;
     update_online_model(info, player, b);
   }
 }

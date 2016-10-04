@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 // This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree. An additional grant 
+// LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
-// 
+//
 
 #include "pattern_v2.h"
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     // Sample it.
     void *be = PatternV2InitBoardExtra(pat, &b);
     double start = wallclock();
-    PatternV2SampleMany(be, move_ext, &summary);
+    PatternV2SampleMany(be, move_ext, NULL, &summary);
     total_duration += wallclock() - start;
     total_moves += summary.n;
 

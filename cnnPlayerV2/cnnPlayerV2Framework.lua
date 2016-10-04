@@ -37,6 +37,8 @@ local handicaps = {
     [13] = { "*9 G13 O13 G7 O7", "*9 C3 R3 C17 R17" },
 } 
 
+local disable_time_left = false
+
 local function parse_handicap(num_stone, stone_list) 
     local hlist = handicaps[num_stone]
     if type(hlist) == 'table' then
@@ -78,7 +80,11 @@ function cnnplayer:time_left(color, num_seconds, num_moves)
     if self.mycolor and thiscolor == self.mycolor and num_seconds and num_moves then
         io.stderr:write(string.format("timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
         if self.cbs.on_time_left then
-            self.cbs.on_time_left(tonumber(num_seconds), tonumber(num_moves))
+            if not disable_time_left then 
+                self.cbs.on_time_left(tonumber(num_seconds), tonumber(num_moves))
+            else
+                print("Time left was disabled")
+            end
         end
     else
         io.stderr:write(string.format("enemy timeleft -- color: %s, num_seconds: %s, num_moves: %s", color, num_seconds, num_moves))
@@ -190,7 +196,21 @@ function cnnplayer:clear_board()
     return true
 end
 
+function cnnplayer:show_board_history()
+    if not self.board_history then
+        return true, "no board history"
+    end
+    for i = 1, #self.board_history do
+        print("History " .. i)
+        board.show_fancy(self.board_history[i], "all_rows_cols")
+    end
+    print("Current board: ")
+    board.show_fancy(self.b, "all_rows_cols")
+    return true, "Total board history: " .. #self.board_history 
+end
+
 function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
+    donnot_flip_vertical = donnot_flip_vertical or false 
     self:clear_board()
     -- Load the sgf file and play until till_move
     io.stderr:write("Loading " .. filename .. " board flip: " .. donnot_flip_vertical)
@@ -208,7 +228,7 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
         self.cbs.set_komi(self.val_komi + self.val_handi)
     end
 
-    till_move = till_move and tonumber(till_move)
+    till_move = till_move ~= nil and tonumber(till_move)
     local moves = { }
     game:play(function (move, counter) 
         -- Vertically flip it so that sgf in KGS looks the same as the one show in terminal.
@@ -265,13 +285,18 @@ function cnnplayer:extract_win_rate(filename, run_from, run_to, save_to)
     filename = filename or "*"
 
     local f = io.open(save_to, "w")
+    if f == nil then 
+        print("open file " .. save_to .. " error!")
+        return false
+    end
+    run_from = run_from or 1
     run_to = run_to or -1
 
     -- require 'fb.debugger'.enter()
 
     -- Setup the board. 
     if filename ~= '*' then
-        self:setup_board(filename, tonumber(run_from))
+        self:setup_board(filename, tonumber(run_from), false)
     elseif not self.game then
         return false, "Game is not loaded!"
     end
@@ -524,7 +549,7 @@ function cnnplayer:pattern_next(max_heap_size)
     -- Call
     board.show_fancy(self.b, 'last_move')
     local be = self.dp.new(self.def_policy, self.b)
-    self.dp.dump_status(be, tonumber(max_heap_size))
+    print(self.dp.dump_status(be, tonumber(max_heap_size)))
     self.dp.free(be)
     return true
 end

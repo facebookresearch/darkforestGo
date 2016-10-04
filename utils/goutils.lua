@@ -386,6 +386,29 @@ function goutils.rotateMove(x, y, style)
     return x, y 
 end
 
+local function rotate_table(game, style)
+    if type(game) == 'table' or torch.typename(game) == 'tds.Hash' then
+        for k, v in pairs(game) do
+            game[k] = rotate_table(v, style)
+        end
+        return game
+    elseif type(game) == 'string' and #game == 2 then
+        -- Rotate the coordinate.
+        local x, y = sgfloader.parse_move(game) 
+        x, y = goutils.rotateMove(x, y, style)
+        local player_str, coord_str = sgfloader.compose_move(x, y)
+        return coord_str
+    else
+        return game
+    end
+end
+
+function goutils.rotateSgf(game, style)
+    -- Rotate an SGF file.
+    -- Recursively loop through to find any coordinates, and rotate them.
+    return rotate_table(game, style)
+end
+
 function goutils.is_pass(x, y) 
     return x == 0 and y == 0
 end
