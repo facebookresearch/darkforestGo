@@ -220,8 +220,8 @@ void DestroyAllMovesExt(AllMovesExt *h) {
 }
 
 AllMovesComments *InitAllMovesComments(int num_moves) {
-  AllMovesComments *all_moves_c = malloc(sizeof(AllMovesComments));
-  all_moves_c->comments = malloc(num_moves * sizeof(SingleComment));
+  AllMovesComments *all_moves_c = (AllMovesComments *)malloc(sizeof(AllMovesComments));
+  all_moves_c->comments = (SingleComment *)malloc(num_moves * sizeof(SingleComment));
   all_moves_c->num_comments = num_moves;
   return all_moves_c;
 }
@@ -2271,7 +2271,7 @@ void PatternV2SampleMany(void *be, AllMovesExt *all_moves, AllMovesComments *com
 
   const int max_heap_dumped = 10;
 
-  if (comments != NULL) assert(comments->num_comments == all_moves->num_comments);
+  if (comments != NULL) assert(comments->num_comments == all_moves->num_moves);
 
   int i = 0;
   for (i = 0; i < all_moves->num_moves; ++i) {
@@ -2781,7 +2781,7 @@ const char *PatternV2BoardExtraDumpInfo(void *be, int max_heap_dumped) {
   all_info[0] = 0;
   int len = 0;
 
-  len += heap_dump_to_buffer(be, max_heap_dumped, all_info);
+  len += heap_dump_to_buffer(board_extra, max_heap_dumped, all_info);
 
   char buf[30];
   len += sprintf(all_info + len, "----- Prior moves: #moves = %d--------\n", board_extra->num_prior_moves);
