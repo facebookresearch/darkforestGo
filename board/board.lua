@@ -224,7 +224,7 @@ end
 
 function board.get_simple_ko(b, player)
     local simple_ko = torch.FloatTensor(19, 19)
-    C.GetStones(b, player, simple_ko:data())
+    C.GetSimpleKo(b, player, simple_ko:data())
     return simple_ko
 end
 
