@@ -182,7 +182,12 @@ local function get_top5(output, v)
     local batchsize = output:size(1)
     local top_accuracy = torch.FloatTensor(topn):zero()
     local _, sorted_indices = output:sort(2, true)
-    -- require 'fb.debugger'.enter()
+    if torch.typename(sorted_indices) ~= 'torch.CudaTensor' then
+       sorted_indices2 = torch.CudaTensor(unpack(sorted_indices:size():totable()))
+       sorted_indices2:copy(sorted_indices)
+       sorted_indices = sorted_indices2
+    end
+
     for i = 1, topn do
         local accuracy = v:eq(sorted_indices:narrow(2, i, 1)):sum()
         top_accuracy[i] = accuracy
