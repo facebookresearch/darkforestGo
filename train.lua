@@ -48,7 +48,7 @@ local opt = pl.lapp[[
     --epoch_size_test     (default 128000)      Epoch size for test.
     --data_augmentation                        Whether to use data_augmentation
 
-    --nGPU                (default 2)          Number of GPUs to use.
+    --nGPU                (default 1)          Number of GPUs to use.
     --nstep               (default 3)          Number of steps.
     --model_name          (default 'model-12-parallel-384-n-output-bn')
     --datasource          (default 'kgs')
