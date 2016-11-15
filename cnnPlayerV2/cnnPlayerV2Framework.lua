@@ -121,7 +121,7 @@ function cnnplayer:save_sgf(filename)
     }
     f:write(sgfloader.sgf_string(header, self.sgf_history))
     f:close()
-    io.stderr:write("Sgf " .. filename .. " saved.")
+    io.stderr:write("Sgf " .. filename .. " saved.\n")
     return true
 end
 
@@ -213,7 +213,7 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
     donnot_flip_vertical = donnot_flip_vertical or false
     self:clear_board()
     -- Load the sgf file and play until till_move
-    io.stderr:write("Loading " .. filename .. " board flip: " .. donnot_flip_vertical)
+    io.stderr:write("Loading " .. filename .. " board flip: " .. tostring(donnot_flip_vertical))
     local content = io.open(filename)
     if content == nil then
         return false, "File " .. filename .. " cannot be loaded"
@@ -243,7 +243,7 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
 
         -- require 'fb.debugger'.enter()
         if counter > self.val_handi then
-            io.stderr:write("Move: " .. move_str)
+            io.stderr:write("Move: " .. move_str .. "\n")
             board.play(self.b, x, y, player)
             -- self:play(player_str, c, false)
         else
@@ -251,15 +251,16 @@ function cnnplayer:setup_board(filename, till_move, donnot_flip_vertical)
             board.place_handicap(self.b, x, y, player)
         end
         if move.C then
-            io.stderr:write("---------------------")
+            io.stderr:write("\n---------------------\n")
             io.stderr:write(move.C)
-            io.stderr:write("---------------------")
+            io.stderr:write("\n---------------------\n")
         end
         if self.cbs.get_value then
             self.cbs.get_value(self.b, player)
         end
         return true
     end, till_move)
+    io.stderr:write("All move imported\n")
     -- Finally we set the board.
     if self.cbs.set_board then
         self.cbs.set_board(self.b)

@@ -1,6 +1,7 @@
 *.o
 *.so
 *.swp
+*.bin
 models
 test_playout_multithread
 cnnPlayerV2/game-*.sgf
