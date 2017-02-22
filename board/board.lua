@@ -224,7 +224,11 @@ end
 
 function board.get_simple_ko(b, player)
     local simple_ko = torch.FloatTensor(19, 19)
-    C.GetSimpleKo(b, player, simple_ko:data())
+    -- This is a bug in old version of darkforest, fixed on Oct 4, 2016. 
+    -- But since the model is not updated yet, it causes regression on its strength.
+    -- So for now I revoke this change and will retrain/update the model.
+    C.GetStones(b, player, simple_ko:data())
+    -- C.GetSimpleKo(b, player, simple_ko:data())
     return simple_ko
 end
 
