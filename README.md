@@ -1,6 +1,8 @@
 DarkForest, the Facebook Go engine
 ========
 
+**Update[12/11/2017]** DarkForestGo has been incorporated into ELF [platform](https://github.com/facebookresearch/ELF).
+
 **Update**: The training code is open source now. See below for detailed instructions.
 
 DarkForest is a Go game engine powered by Deep Learning and developed at Facebook AI Research.
