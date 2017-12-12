@@ -1,7 +1,7 @@
 DarkForest, the Facebook Go engine
 ========
 
-**Update[12/11/2017]** DarkForestGo has been incorporated into ELF [platform](https://github.com/facebookresearch/ELF).
+**Update[12/11/2017]** DarkForestGo has been incorporated into ELF [platform](https://github.com/facebookresearch/ELF/tree/master/go).
 
 **Update**: The training code is open source now. See below for detailed instructions.
 
